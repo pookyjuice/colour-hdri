@@ -1,3 +1,5 @@
+# isort: skip_file
+
 from .hdri import plot_HDRI_strip
 from .tonemapping import plot_tonemapping_operator_image
 

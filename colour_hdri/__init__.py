@@ -21,6 +21,8 @@ Subpackages
 -   utilities: Various utilities and data structures.
 """
 
+# isort: skip_file
+
 from __future__ import annotations
 
 import contextlib
