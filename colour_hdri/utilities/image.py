@@ -18,7 +18,6 @@ from collections.abc import MutableSequence
 from dataclasses import dataclass, field, fields
 
 import numpy as np
-from colour.io import read_image_OpenImageIO
 from colour.hints import (
     Any,
     ArrayLike,
@@ -29,6 +28,7 @@ from colour.hints import (
     Sequence,
     cast,
 )
+from colour.io import read_image_OpenImageIO
 from colour.utilities import (
     MixinDataclassArray,
     as_float_array,
