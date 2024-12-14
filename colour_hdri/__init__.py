@@ -347,21 +347,21 @@ colour.utilities.ANCILLARY_COLOUR_SCIENCE_PACKAGES["colour-hdri"] = _version  # 
 if is_rawpy_installed():
     import rawpy
 
-    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["rawpy"] = rawpy.__version__
+    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["rawpy"] = rawpy.__version__  # pyright: ignore
 
     del rawpy
 
 if is_lensfunpy_installed():
     import lensfunpy
 
-    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["lensfunpy"] = lensfunpy.__version__
+    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["lensfunpy"] = lensfunpy.__version__  # pyright: ignore
 
     del lensfunpy
 
 if is_opencv_installed():
     import cv2
 
-    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["OpenCV"] = cv2.__version__
+    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["OpenCV"] = cv2.__version__  # pyright: ignore
 
     del cv2
 
