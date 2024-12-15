@@ -55,6 +55,7 @@ from colour_hdri import (
     ImageStack,
     convert_raw_files_to_dng_files,
     double_sigmoid_anchored_function,
+    filter_files,
     image_stack_to_HDRI,
     read_dng_files_exif_tags,
     read_exif_tags,
@@ -70,6 +71,9 @@ from colour_hdri.models import (
 )
 from colour_hdri.process import DNG_CONVERTER
 from colour_hdri.utilities import vivified_to_dict
+
+ST_MAP = filter_files("/Ingestion", ("st_map.exr",))
+os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 
 __author__ = "Colour Developers"
 __copyright__ = "Copyright 2015 Colour Developers"
@@ -1151,34 +1155,55 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
                 )
 
         if self.get_input("correct_chromatic_aberration"):
-            self.log("Correcting lens chromatic aberration...")
+            self.log("Correcting lens chromatic aberration using darktable-cli...")
 
-            coordinates = modifier.apply_subpixel_distortion()
-            if coordinates is not None:
-                output_image[..., 0] = cv2.remap(
-                    output_image[..., 0], coordinates[..., 0, :], None, cv2.INTER_CUBIC
-                )
-                output_image[..., 1] = cv2.remap(
-                    output_image[..., 1], coordinates[..., 1, :], None, cv2.INTER_CUBIC
-                )
-                output_image[..., 2] = cv2.remap(
-                    output_image[..., 2], coordinates[..., 2, :], None, cv2.INTER_CUBIC
+            try:
+                output_image = self.correct_chromatic_aberration_with_darktable(
+                    output_image
                 )
                 self.log("Lens chromatic aberration was successfully corrected!")
-            else:
+            except RuntimeError as e:
                 self.log(
-                    "Lens chromatic aberration was not corrected, "
-                    "the lens might be missing data."
+                    f"Lens chromatic aberration correction failed: {e!s}",
+                    "error",
                 )
 
         if self.get_input("correct_distortion"):
             self.log("Correcting lens distortion...")
 
-            coordinates = modifier.apply_geometry_distortion()
-            if coordinates is not None:
+            st_map_path = ST_MAP[0]
+            st_map = cv2.imread(
+                st_map_path, cv2.IMREAD_UNCHANGED
+            )  # Loads all channels as floats
+
+            if st_map.size:
+                # Extract the width and height of the image
+                height, width = output_image.shape[:2]
+
+                # Assuming dist_map has at least 2 channels:
+                # Split the distortion map into its respective channels
+                red_channel = st_map[:, :, 2]  # The second channel
+                green_channel = st_map[:, :, 1]  # The first channel
+
+                # Convert normalized values (0 to 1) to absolute pixel coordinates
+                map_x = (red_channel.astype(np.float32)) * (width - 1)
+                map_y = (1.0 - green_channel.astype(np.float32)) * (
+                    height - 1
+                )  # Flip y-axis by using (1.0 - value)
+
+                # Clamp values to be within valid pixel range
+                map_x = np.clip(map_x, 0, width - 1)
+                map_y = np.clip(map_y, 0, height - 1)
+
+                # Apply the remap function to the input image
                 output_image = cv2.remap(
-                    output_image, coordinates, None, cv2.INTER_CUBIC
+                    output_image,
+                    map_x,
+                    map_y,
+                    interpolation=cv2.INTER_LINEAR,
+                    borderMode=cv2.BORDER_REPLICATE,
                 )
+
                 self.log("Lens distortion was successfully corrected!")
             else:
                 self.log(
@@ -1189,6 +1214,85 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         self.set_output("output_image", output_image)
 
         self.dirty = False
+
+    def correct_chromatic_aberration_with_darktable(
+        self, input_image: np.ndarray
+    ) -> np.ndarray:
+        """
+        Correct chromatic aberration using darktable-cli.
+
+        Parameters
+        ----------
+        input_image : np.ndarray
+            Input image as a NumPy array.
+
+        Returns
+        -------
+        np.ndarray
+            Corrected image as a NumPy array.
+
+        Raises
+        ------
+        RuntimeError
+            If the darktable-cli process fails.
+        """
+        import os
+        import subprocess
+        import tempfile
+
+        import cv2
+
+        # Create secure temporary files
+        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as temp_input:
+            temp_input_file = temp_input.name
+
+        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as temp_output:
+            temp_output_file = temp_output.name
+
+        style_file = "raw_chromatic_abberation_only"
+
+        try:
+            # Save the input image to a temporary file
+            cv2.imwrite(
+                temp_input_file,
+                cv2.cvtColor(input_image, cv2.COLOR_RGB2BGR),
+                [cv2.IMWRITE_TIFF_COMPRESSION, 1],
+            )
+
+            # Construct the command
+            command = [
+                "darktable-cli",
+                temp_input_file,
+                temp_output_file,
+                "--style",
+                style_file,
+                "--icc-type",
+                "LIN_REC709",
+            ]
+
+            # Run darktable-cli as a subprocess securely
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            self.log(result.stdout)  # Log the output (replace with self.log if needed)
+
+            # Read the corrected output file as a numpy array
+            corrected_file = cv2.imread(temp_output_file, cv2.IMREAD_UNCHANGED)
+            if corrected_file is None:
+                raise RuntimeError("Failed to read the corrected file.")
+
+        except subprocess.CalledProcessError as e:
+            self.log(f"Error running darktable-cli: {e.stderr}")
+            raise RuntimeError("darktable-cli failed to process the image.") from e
+        finally:
+            # Ensure temporary files are cleaned up
+            os.remove(temp_input_file)
+            os.remove(temp_output_file)
+
+        return corrected_file
 
 
 class NodeDownsample(ExecutionNode):
