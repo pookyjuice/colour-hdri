@@ -1,0 +1,37 @@
+<lensdatabase>
+    <lens>
+        <maker>Nikon</maker>
+        <model>NIKKOR Z 20mm f/1.8 S</model>
+        <mount>Nikon Z</mount>
+        <cropfactor>1.0</cropfactor>
+        <calibration>
+            <distortion model="ptlens" focal="20.0" a="0.0" b="0.0" c="0.0" />
+            <tca model="poly3" focal="20.0" br="-0.0000076" vr="1.0000321" bb="0.0000033" vb="1.0000124" />
+            <vignetting model="pa" focal="20.0" aperture="1.8" distance="0.2" k1="-2.0806600" k2="1.9419248" k3="-0.7059371" />
+            <vignetting model="pa" focal="20.0" aperture="1.8" distance="1.4" k1="-1.9331925" k2="1.6724291" k3="-0.5816650" />
+            <vignetting model="pa" focal="20.0" aperture="1.8" distance="2.6" k1="-1.9683340" k2="1.7404963" k3="-0.6171673" />
+            <vignetting model="pa" focal="20.0" aperture="1.8" distance="3.8" k1="-1.9748492" k2="1.7493467" k3="-0.6208996" />
+            <vignetting model="pa" focal="20.0" aperture="1.8" distance="1000" k1="-2.0051211" k2="1.8152558" k3="-0.6600200" />
+            <vignetting model="pa" focal="20.0" aperture="2.8" distance="0.2" k1="-1.2035728" k2="0.7013232" k3="-0.1924001" />
+            <vignetting model="pa" focal="20.0" aperture="2.8" distance="1.4" k1="-1.1427917" k2="0.5840841" k3="-0.1494818" />
+            <vignetting model="pa" focal="20.0" aperture="2.8" distance="2.6" k1="-1.0036234" k2="0.3634775" k3="-0.0453404" />
+            <vignetting model="pa" focal="20.0" aperture="2.8" distance="3.8" k1="-1.0161763" k2="0.3862420" k3="-0.0582312" />
+            <vignetting model="pa" focal="20.0" aperture="2.8" distance="1000" k1="-1.1992154" k2="0.6991699" k3="-0.2130739" />
+            <vignetting model="pa" focal="20.0" aperture="4.0" distance="0.2" k1="-1.1768041" k2="0.6598283" k3="-0.1485176" />
+            <vignetting model="pa" focal="20.0" aperture="4.0" distance="1.4" k1="-0.9790655" k2="0.3744821" k3="-0.0281564" />
+            <vignetting model="pa" focal="20.0" aperture="4.0" distance="2.6" k1="-1.2184792" k2="0.7667693" k3="-0.2141207" />
+            <vignetting model="pa" focal="20.0" aperture="4.0" distance="3.8" k1="-1.2150042" k2="0.7623558" k3="-0.2124292" />
+            <vignetting model="pa" focal="20.0" aperture="4.0" distance="1000" k1="-1.2080267" k2="0.7496926" k3="-0.2052601" />
+            <vignetting model="pa" focal="20.0" aperture="8.0" distance="0.2" k1="-1.0674979" k2="0.4848094" k3="-0.0675855" />
+            <vignetting model="pa" focal="20.0" aperture="8.0" distance="1.4" k1="-1.2172785" k2="0.7751143" k3="-0.2222664" />
+            <vignetting model="pa" focal="20.0" aperture="8.0" distance="2.6" k1="-1.2311533" k2="0.7973102" k3="-0.2318139" />
+            <vignetting model="pa" focal="20.0" aperture="8.0" distance="3.8" k1="-1.0887969" k2="0.5537634" k3="-0.1114351" />
+            <vignetting model="pa" focal="20.0" aperture="8.0" distance="1000" k1="-1.2470625" k2="0.8217286" k3="-0.2410496" />
+            <vignetting model="pa" focal="20.0" aperture="16.0" distance="0.2" k1="-1.1693918" k2="0.6605569" k3="-0.1552751" />
+            <vignetting model="pa" focal="20.0" aperture="16.0" distance="1.4" k1="-1.2738483" k2="0.8742219" k3="-0.2722949" />
+            <vignetting model="pa" focal="20.0" aperture="16.0" distance="2.6" k1="-1.2812636" k2="0.8871067" k3="-0.2789327" />
+            <vignetting model="pa" focal="20.0" aperture="16.0" distance="3.8" k1="-1.2869117" k2="0.8936139" k3="-0.2796177" />
+            <vignetting model="pa" focal="20.0" aperture="16.0" distance="1000" k1="-1.2885214" k2="0.8963954" k3="-0.2800227" />
+        </calibration>
+    </lens>
+</lensdatabase>
