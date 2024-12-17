@@ -1090,7 +1090,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         import lensfunpy
 
         # lensfun.xml for specific cameras loaded here
-        database = lensfunpy.Database(["colour-hdri/lens_database/lensfun.xml"])
+        database = lensfunpy.Database(["lens_database/lensfun.xml"])
 
         camera_make = exif_group["Make"]
         camera_model = exif_group["Camera Model Name"]
@@ -1243,55 +1243,48 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
 
         import cv2
 
-        # Create secure temporary files
-        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as temp_input:
-            temp_input_file = temp_input.name
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_input_file = os.path.join(temp_dir, "input_image.tif")
+            temp_output_file = os.path.join(temp_dir, "output_image.tif")
+            workdir = "/workspaces/colour-science.devcontainer"
+            xmp_template = f"{workdir}/colour-hdri/darktable_files/tca_template.tif.xmp"
+            temp_xmp_file = os.path.join(temp_dir, "input_image.tif.xmp")
 
-        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as temp_output:
-            temp_output_file = temp_output.name
+            try:
+                # Save the input image to a temporary file
+                cv2.imwrite(
+                    temp_input_file, cv2.cvtColor(input_image, cv2.COLOR_RGB2BGR)
+                )
 
-        style_file = "raw_chromatic_abberation_only"
+                # Step 1: Copy the XMP template
+                copy_command = ["cp", xmp_template, temp_xmp_file]
+                subprocess.run(copy_command, check=True)
 
-        try:
-            # Save the input image to a temporary file
-            cv2.imwrite(
-                temp_input_file,
-                cv2.cvtColor(input_image, cv2.COLOR_RGB2BGR),
-                [cv2.IMWRITE_TIFF_COMPRESSION, 1],
-            )
+                # Step 2: Run darktable-cli
+                command = [
+                    "darktable-cli",
+                    temp_input_file,
+                    temp_xmp_file,
+                    temp_output_file,
+                    "--core",
+                    "--configdir",
+                    temp_dir,
+                ]
+                result = subprocess.run(
+                    command, capture_output=True, text=True, check=True
+                )
+                self.log(
+                    result.stdout
+                )  # Log the output (replace with self.log if needed)
 
-            # Construct the command
-            command = [
-                "darktable-cli",
-                temp_input_file,
-                temp_output_file,
-                "--style",
-                style_file,
-                "--icc-type",
-                "LIN_REC709",
-            ]
+                # Read the corrected output file as a numpy array
+                corrected_file = cv2.imread(temp_output_file, cv2.IMREAD_UNCHANGED)
+                if corrected_file is None:
+                    raise RuntimeError("Failed to read the corrected file.")
 
-            # Run darktable-cli as a subprocess securely
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            self.log(result.stdout)  # Log the output (replace with self.log if needed)
-
-            # Read the corrected output file as a numpy array
-            corrected_file = cv2.imread(temp_output_file, cv2.IMREAD_UNCHANGED)
-            if corrected_file is None:
-                raise RuntimeError("Failed to read the corrected file.")
-
-        except subprocess.CalledProcessError as e:
-            self.log(f"Error running darktable-cli: {e.stderr}")
-            raise RuntimeError("darktable-cli failed to process the image.") from e
-        finally:
-            # Ensure temporary files are cleaned up
-            os.remove(temp_input_file)
-            os.remove(temp_output_file)
+            except subprocess.CalledProcessError as e:
+                self.log(f"Error running subprocess: {e.stderr}")
+                raise RuntimeError("Subprocess failed.") from e
 
         return corrected_file
 
