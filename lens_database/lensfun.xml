@@ -6,7 +6,7 @@
         <cropfactor>1.0</cropfactor>
         <calibration>
             <distortion model="ptlens" focal="20.0" a="0.0" b="0.0" c="0.0" />
-            <tca model="poly3" focal="20.0" br="-0.0000076" vr="1.0000321" bb="0.0000033" vb="1.0000124" />
+            <tca model="poly3" focal="20.0" br="-0.000076" vr="1.000321" bb="0.000033" vb="1.000124" />
             <vignetting model="pa" focal="20.0" aperture="1.8" distance="0.2" k1="-2.0806600" k2="1.9419248" k3="-0.7059371" />
             <vignetting model="pa" focal="20.0" aperture="1.8" distance="1.4" k1="-1.9331925" k2="1.6724291" k3="-0.5816650" />
             <vignetting model="pa" focal="20.0" aperture="1.8" distance="2.6" k1="-1.9683340" k2="1.7404963" k3="-0.6171673" />

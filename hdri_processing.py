@@ -58,9 +58,17 @@ def weighting_function(a):
     numpy.ndarray or float
         Weighted output values.
     """
-    return colour_hdri.generation.double_sigmoid_anchored_function(
-        a, 0.025, 0.2, 0.25, 0.975
-    )
+    import numpy as np
+
+    eps = np.finfo(float).eps
+
+    try:
+        return colour_hdri.generation.double_sigmoid_anchored_function(
+            a, 0.025 + eps, 0.2, 0.25, 0.975 - eps
+        )
+    except RuntimeWarning as e:
+        logging.log(f"RuntimeWarning: {e}")
+        return np.zeros_like(a)  # Fallback for safety
 
 
 if __name__ == "__main__":

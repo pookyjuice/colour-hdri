@@ -1090,7 +1090,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         import lensfunpy
 
         # lensfun.xml for specific cameras loaded here
-        database = lensfunpy.Database(["lens_database/lensfun.xml"])
+        database = lensfunpy.Database(["colour-hdri/lens_database/lensfun.xml"])
 
         camera_make = exif_group["Make"]
         camera_model = exif_group["Camera Model Name"]
@@ -1156,17 +1156,33 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
                 )
 
         if self.get_input("correct_chromatic_aberration"):
-            self.log("Correcting lens chromatic aberration using darktable-cli...")
+            self.log("Correcting lens chromatic aberration...")
 
-            try:
-                output_image = self.correct_chromatic_aberration_with_darktable(
-                    output_image
+            coordinates = modifier.apply_subpixel_distortion()
+            if coordinates is not None:
+                output_image[..., 0] = cv2.remap(  # pyright: ignore
+                    output_image[..., 0],
+                    coordinates[..., 0, :],
+                    None,  # pyright: ignore
+                    cv2.INTER_CUBIC,
+                )
+                output_image[..., 1] = cv2.remap(  # pyright: ignore
+                    output_image[..., 1],
+                    coordinates[..., 1, :],
+                    None,  # pyright: ignore
+                    cv2.INTER_CUBIC,
+                )
+                output_image[..., 2] = cv2.remap(  # pyright: ignore
+                    output_image[..., 2],
+                    coordinates[..., 2, :],
+                    None,  # pyright: ignore
+                    cv2.INTER_CUBIC,
                 )
                 self.log("Lens chromatic aberration was successfully corrected!")
-            except RuntimeError as e:
+            else:
                 self.log(
-                    f"Lens chromatic aberration correction failed: {e!s}",
-                    "error",
+                    "Lens chromatic aberration was not corrected, "
+                    "the lens might be missing data."
                 )
 
         if self.get_input("correct_distortion"):
@@ -1264,7 +1280,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
                 command = [
                     "darktable-cli",
                     temp_input_file,
-                    temp_xmp_file,
+                    # temp_xmp_file,
                     temp_output_file,
                     "--core",
                     "--configdir",
@@ -1278,7 +1294,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
                 )  # Log the output (replace with self.log if needed)
 
                 # Read the corrected output file as a numpy array
-                corrected_file = cv2.imread(temp_output_file, cv2.IMREAD_UNCHANGED)
+                corrected_file = cv2.imread(temp_output_file, cv2.COLOR_RGB2BGR)
                 if corrected_file is None:
                     raise RuntimeError("Failed to read the corrected file.")
 
