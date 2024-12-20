@@ -1090,7 +1090,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         import lensfunpy
 
         # lensfun.xml for specific cameras loaded here
-        database = lensfunpy.Database(["colour-hdri/lens_database/lensfun.xml"])
+        database = lensfunpy.Database(["lens_database/lensfun.xml"])
 
         camera_make = exif_group["Make"]
         camera_model = exif_group["Camera Model Name"]
