@@ -46,17 +46,23 @@ classifiers = [
     "Topic :: Software Development"
 ]
 dependencies = [
-    "colour-science>=0.4.4",
+    "colour-science>=0.4.5",
     "imageio>=2,<3",
-    "numpy>=1.24,<3",
+    "numpy>=1.24,<2",
     "scipy>=1.10,<2",
     "typing-extensions>=4,<5",
 ]
 
 [project.optional-dependencies]
 optional = [
+    "colour-datasets>=0.2.6",
     "colour-demosaicing>=0.2.4",
+    "lensfunpy<2;python_version<'3.13'",
     "matplotlib>=3.7",
+    "networkx >=3,<4",
+    "opencv-python>=4,<5",
+    "pydot>=3,<4",
+    "rawpy<1;python_version<'3.13'",
 ]
 docs = [
     "biblib-simple",
@@ -114,10 +120,8 @@ exclude = [
 ]
 
 [tool.codespell]
+ignore-words-list = "socio-economic"
 skip = "BIBLIOGRAPHY.bib,CONTRIBUTORS.rst,*.ipynb"
-
-[tool.flynt]
-line_length=999
 
 [tool.isort]
 ensure_newline_before_comments = true
@@ -125,7 +129,6 @@ force_grid_wrap = 0
 include_trailing_comma = true
 line_length = 88
 multi_line_output = 3
-skip_glob = ["colour_hdri/**/__init__.py"]
 split_on_trailing_comma = true
 use_parentheses = true
 
@@ -142,7 +145,7 @@ reportUnusedExpression = false
 addopts = "--durations=5"
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 88
 select = [
     "A", # flake8-builtins
@@ -217,8 +220,10 @@ ignore = [
     "RET506",
     "RET507",
     "RET508",
+    "RUF022",
     "TRY003",
     "TRY300",
+    "UP038",
 ]
 typing-modules = ["colour.hints"]
 fixable = ["B", "C", "E", "F", "PIE", "RUF", "SIM", "UP", "W"]

@@ -1,3 +1,5 @@
+# isort: skip_file
+
 from .common import (
     average_luminance,
     average_illuminance,

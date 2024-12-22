@@ -1,3 +1,5 @@
+# isort: skip_file
+
 import sys
 
 from colour.utilities.deprecation import ModuleAPI, build_API_changes
@@ -9,6 +11,7 @@ from .weighting_functions import (
     normal_distribution_function,
     hat_function,
     weighting_function_Debevec1997,
+    double_sigmoid_anchored_function,
 )
 from .hdri import image_stack_to_HDRI
 
@@ -17,6 +20,7 @@ __all__ += [
     "normal_distribution_function",
     "hat_function",
     "weighting_function_Debevec1997",
+    "double_sigmoid_anchored_function",
 ]
 __all__ += [
     "image_stack_to_HDRI",

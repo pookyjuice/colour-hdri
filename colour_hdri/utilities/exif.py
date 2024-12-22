@@ -244,7 +244,7 @@ def parse_exif_data(data: str) -> List:
         raise ValueError("The EXIF data output cannot be parsed!")
 
 
-def read_exif_tags(image: str) -> defaultdict:
+def read_exif_tags(image: str, numeric: bool = False) -> defaultdict:
     """
     Return given image EXIF image tags.
 
@@ -252,6 +252,8 @@ def read_exif_tags(image: str) -> defaultdict:
     ----------
     image
         Image file.
+    numeric
+        Whether to return the EXIF tags as numeric values.
 
     Returns
     -------
@@ -261,11 +263,16 @@ def read_exif_tags(image: str) -> defaultdict:
 
     LOGGER.info('Reading "%s" image EXIF data.', image)
 
+    args = ["-D", "-G", "-a", "-u"]
+
+    if numeric:
+        args.append("-n")
+
     exif_tags = vivification()
     lines = str(
-        subprocess.check_output(
-            [EXIF_EXECUTABLE, "-D", "-G", "-a", "-u", "-n", image],
-            shell=_IS_WINDOWS_PLATFORM,  # noqa: S603
+        subprocess.check_output(  # noqa: S603
+            [EXIF_EXECUTABLE, *args, image],
+            shell=_IS_WINDOWS_PLATFORM,
         ),
         "utf-8",
         "ignore",
@@ -306,9 +313,9 @@ def copy_exif_tags(source: str, target: str) -> bool:
 
     arguments = [EXIF_EXECUTABLE, "-overwrite_original", "-TagsFromFile"]
     arguments += [source, target]
-    subprocess.check_output(
+    subprocess.check_output(  # noqa: S603
         arguments,
-        shell=_IS_WINDOWS_PLATFORM,  # noqa: S603
+        shell=_IS_WINDOWS_PLATFORM,
     )
 
     return True
@@ -354,23 +361,23 @@ def delete_exif_tags(image: str) -> bool:
 
     LOGGER.info('Deleting "%s" image EXIF tags.', image)
 
-    subprocess.check_output(
+    subprocess.check_output(  # noqa: S603
         [EXIF_EXECUTABLE, "-overwrite_original", "-all=", image],
-        shell=_IS_WINDOWS_PLATFORM,  # noqa: S603
+        shell=_IS_WINDOWS_PLATFORM,
     )
 
     return True
 
 
-def read_exif_tag(image: str, tag: str) -> str:
+def read_exif_tag(image: str, tag: str, numeric: bool = False) -> str:
     """
     Return given image EXIF tag value.
 
     Parameters
     ----------
-    image : str
+    image
         Image file to read the EXIF tag value of.
-    tag : str
+    tag
         Tag to read the value of.
 
     Returns
@@ -379,11 +386,16 @@ def read_exif_tag(image: str, tag: str) -> str:
         Tag value.
     """
 
+    args = [f"-{tag}"]
+
+    if numeric:
+        args.append("-n")
+
     value = (
         str(
-            subprocess.check_output(
-                [EXIF_EXECUTABLE, f"-{tag}", image],
-                shell=_IS_WINDOWS_PLATFORM,  # noqa: S603
+            subprocess.check_output(  # noqa: S603
+                [EXIF_EXECUTABLE, *args, image],
+                shell=_IS_WINDOWS_PLATFORM,
             ),
             "utf-8",
             "ignore",
@@ -409,11 +421,11 @@ def write_exif_tag(image: str, tag: str, value: str) -> bool:
 
     Parameters
     ----------
-    image : str
+    image
         Image file to set the EXIF tag value of.
-    tag : str
+    tag
         Tag to set the value of.
-    value : str
+    value
         Value to set.
 
     Returns
@@ -431,9 +443,9 @@ def write_exif_tag(image: str, tag: str, value: str) -> bool:
 
     arguments = [EXIF_EXECUTABLE, "-overwrite_original"]
     arguments += [f"-{tag}={value}", image]
-    subprocess.check_output(
+    subprocess.check_output(  # noqa: S603
         arguments,
-        shell=_IS_WINDOWS_PLATFORM,  # noqa: S603
+        shell=_IS_WINDOWS_PLATFORM,
     )
 
     return True

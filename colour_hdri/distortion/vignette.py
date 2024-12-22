@@ -397,7 +397,7 @@ class DataVignetteCharacterisation(MixinDataclassIterable):
         Vignette characterisation parameters.
     principal_point
         Vignette principal point.
-    """  # noqa: D405, D407, D410, D411, D414
+    """
 
     parameters: ArrayLike
     principal_point: ArrayLike

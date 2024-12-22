@@ -1,3 +1,5 @@
+# isort: skip_file
+
 from .common import vivification, vivified_to_dict, path_exists, filter_files
 from .exif import (
     EXIF_EXECUTABLE,
@@ -15,9 +17,13 @@ from .exif import (
     write_exif_tag,
 )
 from .image import Metadata, Image, ImageStack
+from .requirements import (
+    is_rawpy_installed,
+    is_lensfunpy_installed,
+    is_opencv_installed,
+)
 
-__all__ = []
-__all__ += [
+__all__ = [
     "vivification",
     "vivified_to_dict",
     "path_exists",
@@ -42,4 +48,9 @@ __all__ += [
     "Metadata",
     "Image",
     "ImageStack",
+]
+__all__ += [
+    "is_rawpy_installed",
+    "is_lensfunpy_installed",
+    "is_opencv_installed",
 ]
