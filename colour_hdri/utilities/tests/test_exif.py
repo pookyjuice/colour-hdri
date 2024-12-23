@@ -58,7 +58,7 @@ class TestParseExifString:
     unit tests methods.
     """
 
-    def test_parse_exif_string(self):
+    def test_parse_exif_string(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.parse_exif_string` definition."""
 
         exif_tag = EXIFTag("EXIF", "Make", "Canon", "271")
@@ -71,14 +71,14 @@ class TestParseExifNumber:
     unit tests methods.
     """
 
-    def test_parse_exif_number(self):
+    def test_parse_exif_number(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.parse_exif_number` definition."""
 
         exif_tag = EXIFTag("EXIF", "Focal Length", "16", "37386")
         assert parse_exif_number(exif_tag) == 16
 
         exif_tag = EXIFTag("EXIF", "Focal Length", "16", "37386")
-        assert isinstance(parse_exif_number(exif_tag, np.int_), np.int_)
+        assert isinstance(parse_exif_number(exif_tag, np.int_), np.int_)  # pyright: ignore
 
 
 class TestParseExifFraction:
@@ -87,7 +87,7 @@ class TestParseExifFraction:
     unit tests methods.
     """
 
-    def test_parse_exif_fraction(self):
+    def test_parse_exif_fraction(self) -> None:
         """
         Test :func:`colour_hdri.utilities.exif.parse_exif_fraction`
         definition.
@@ -114,7 +114,7 @@ class TestParseExifArray:
     unit tests methods.
     """
 
-    def test_parse_exif_array(self):
+    def test_parse_exif_array(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.parse_exif_array` definition."""
 
         exif_tag = EXIFTag(
@@ -162,7 +162,7 @@ class TestParseExifData:
     unit tests methods.
     """
 
-    def test_parse_exif_data(self):
+    def test_parse_exif_data(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.parse_exif_data` definition."""
 
         assert parse_exif_data(
@@ -184,7 +184,7 @@ class TestReadExifTags:
     tests methods.
     """
 
-    def test_read_exif_tags(self):
+    def test_read_exif_tags(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.read_exif_tags` definition."""
 
         test_jpg_image = filter_files(ROOT_RESOURCES_FROBISHER_001, ("jpg",))[0]
@@ -490,17 +490,17 @@ class TestCopyExifTags:
     tests methods.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Initialise the common tests attributes."""
 
         self._temporary_directory = tempfile.mkdtemp()
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """After tests actions."""
 
         shutil.rmtree(self._temporary_directory)
 
-    def test_copy_exif_tags(self):
+    def test_copy_exif_tags(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.copy_exif_tags` definition."""
 
         reference_jpg_image = filter_files(ROOT_RESOURCES_FROBISHER_001, ("jpg",))[0]
@@ -522,17 +522,17 @@ class TestUpdateExifTags:
     tests methods.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Initialise the common tests attributes."""
 
         self._temporary_directory = tempfile.mkdtemp()
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """After tests actions."""
 
         shutil.rmtree(self._temporary_directory)
 
-    def test_update_exif_tags(self):
+    def test_update_exif_tags(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.update_exif_tags` definition."""
 
         reference_jpg_images = filter_files(ROOT_RESOURCES_FROBISHER_001, ("jpg",))
@@ -547,7 +547,7 @@ class TestUpdateExifTags:
             assert read_exif_tag(test_jpg_image, "Aperture") == ""
             test_jpg_images.append(test_jpg_image)
 
-        update_exif_tags(zip(reference_jpg_images, test_jpg_images))
+        update_exif_tags(list(zip(reference_jpg_images, test_jpg_images, strict=False)))
         for test_jpg_image in test_jpg_images:
             assert read_exif_tag(test_jpg_image, "Aperture") == "8.0"
 
@@ -558,17 +558,17 @@ class TestDeleteExifTags:
     tests methods.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Initialise the common tests attributes."""
 
         self._temporary_directory = tempfile.mkdtemp()
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """After tests actions."""
 
         shutil.rmtree(self._temporary_directory)
 
-    def test_delete_exif_tags(self):
+    def test_delete_exif_tags(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.delete_exif_tags` definition."""
 
         reference_jpg_image = filter_files(ROOT_RESOURCES_FROBISHER_001, ("jpg",))[0]
@@ -588,7 +588,7 @@ class TestReadExifTag:
     tests methods.
     """
 
-    def test_read_exif_tag(self):
+    def test_read_exif_tag(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.read_exif_tag` definition."""
 
         test_jpg_image = filter_files(ROOT_RESOURCES_FROBISHER_001, ("jpg",))[0]
@@ -606,17 +606,17 @@ class TestWriteExifTag:
     tests methods.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Initialise the common tests attributes."""
 
         self._temporary_directory = tempfile.mkdtemp()
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """After tests actions."""
 
         shutil.rmtree(self._temporary_directory)
 
-    def test_write_exif_tag(self):
+    def test_write_exif_tag(self) -> None:
         """Test :func:`colour_hdri.utilities.exif.write_exif_tag` definition."""
 
         reference_jpg_image = filter_files(ROOT_RESOURCES_FROBISHER_001, ("jpg",))[0]

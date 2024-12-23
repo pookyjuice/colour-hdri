@@ -23,23 +23,30 @@ References
 
 from __future__ import annotations
 
+import typing
 from functools import partial
 
 import numpy as np
-from colour.hints import (
-    Any,
-    ArrayLike,
-    Callable,
-    Dict,
-    NDArrayFloat,
-    Tuple,
-)
+
+if typing.TYPE_CHECKING:
+    from colour.hints import (
+        Any,
+        ArrayLike,
+        Callable,
+        Dict,
+        NDArrayFloat,
+        Tuple,
+    )
+
 from colour.utilities import as_float_array, as_int_array, tstack
 
 from colour_hdri.exposure import average_luminance
 from colour_hdri.generation import weighting_function_Debevec1997
 from colour_hdri.sampling import samples_Grossberg2003
-from colour_hdri.utilities import ImageStack
+
+if typing.TYPE_CHECKING:
+    from colour_hdri.utilities import ImageStack
+
 
 __author__ = "Colour Developers"
 __copyright__ = "Copyright 2015 Colour Developers"

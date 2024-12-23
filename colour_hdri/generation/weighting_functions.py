@@ -20,10 +20,14 @@ References
 
 from __future__ import annotations
 
+import typing
+
 import numpy as np
-from colour.algebra import sdiv, sdiv_mode
-from colour.hints import ArrayLike, NDArrayFloat
-from colour.utilities import as_float_array
+
+if typing.TYPE_CHECKING:
+    from colour.hints import ArrayLike, NDArrayFloat
+
+from colour.utilities import as_float_array, zeros
 
 __author__ = "Colour Developers"
 __copyright__ = "Copyright 2015 Colour Developers"
@@ -138,6 +142,9 @@ def weighting_function_Debevec1997(
     mask = np.where(a <= (domain_l + domain_h) / 2, True, False)
     w[mask] = a[mask] - domain_l
     w[~mask] = domain_h - a[~mask]
+
+    del mask
+
     w /= np.max(w)
 
     w[w < 0] = 0
@@ -196,22 +203,22 @@ def double_sigmoid_anchored_function(
     def anchored_sigmoid_function(
         x: NDArrayFloat, c: float, d: float, k: float
     ) -> NDArrayFloat:
-        with sdiv_mode():
-            return 1 / (1 + np.power(1 / sdiv(x - c, d - c) - 1, k))
+        return 1 / (1 + np.power(1 / ((x - c) / (d - c)) - 1, k))
 
-    return np.select(
-        [
-            a <= domain_l_in,
-            np.logical_and(a > domain_l_in, a <= domain_l_out),
-            np.logical_and(a > domain_l_out, a < domain_h_in),
-            np.logical_and(a >= domain_h_in, a < domain_h_out),
-            a >= domain_h_out,
-        ],
-        [
-            0,
-            anchored_sigmoid_function(a, domain_l_in, domain_l_out, k),
-            1,
-            1 - anchored_sigmoid_function(a, domain_h_in, domain_h_out, k),
-            0,
-        ],
-    )
+    w = zeros(a.shape)
+
+    w[a <= domain_l_in] = 0
+
+    mask = np.logical_and(a > domain_l_in, a <= domain_l_out)
+    w[mask] = anchored_sigmoid_function(a[mask], domain_l_in, domain_l_out, k)
+
+    w[np.logical_and(a > domain_l_out, a < domain_h_in)] = 1
+
+    mask = np.logical_and(a >= domain_h_in, a < domain_h_out)
+    w[mask] = 1 - anchored_sigmoid_function(a[mask], domain_h_in, domain_h_out, k)
+
+    del mask
+
+    w[a >= domain_h_out] = 0
+
+    return w

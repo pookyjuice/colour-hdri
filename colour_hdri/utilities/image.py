@@ -14,18 +14,24 @@ from __future__ import annotations
 import json
 import logging
 import os
+import typing
 from collections.abc import MutableSequence
 from dataclasses import dataclass, field, fields
 
 import numpy as np
+
+if typing.TYPE_CHECKING:
+    from colour.hints import (
+        Any,
+        ArrayLike,
+        Callable,
+        List,
+        Real,
+        Sequence,
+    )
+
 from colour.hints import (
-    Any,
-    ArrayLike,
-    Callable,
-    List,
     NDArrayFloat,
-    Real,
-    Sequence,
     cast,
 )
 from colour.io import read_image, read_image_OpenImageIO
@@ -151,7 +157,7 @@ class Image:
         return self._path
 
     @path.setter
-    def path(self, value: str | None):
+    def path(self, value: str | None) -> None:
         """Setter for the **self._path** property."""
 
         if value is not None:
@@ -181,7 +187,7 @@ class Image:
         return self._data
 
     @data.setter
-    def data(self, value: ArrayLike | None):
+    def data(self, value: ArrayLike | None) -> None:
         """Setter for the **self._data** property."""
 
         if value is not None:
@@ -216,7 +222,7 @@ class Image:
         return self._metadata
 
     @metadata.setter
-    def metadata(self, value):
+    def metadata(self, value: Metadata | None) -> None:
         """Setter for the **self._metadata** property."""
 
         if value is not None:
@@ -258,8 +264,8 @@ class Image:
             self.data = data
 
             return cast(NDArrayFloat, data)
-        else:
-            raise ValueError('The image "path" is undefined!')
+        msg = 'The image "path" is undefined!'
+        raise ValueError(msg)
 
     def read_metadata(self) -> Metadata:
         """
@@ -277,7 +283,8 @@ class Image:
         """
 
         if self._path is None:
-            raise ValueError('The image "path" is undefined!')
+            msg = 'The image "path" is undefined!'
+            raise ValueError(msg)
 
         LOGGER.info('Reading "%s" image metadata.', self._path)
 
@@ -356,9 +363,9 @@ class Image:
         return metadata
 
 
-class ImageStack(MutableSequence):
+class ImageStack(MutableSequence[Image]):
     """
-    Define a convenient stack storing a sequence of images for HDRI / radiance
+    Define a convenient image stack storing a sequence of images for HDRI / radiance
     images generation.
 
     Methods
@@ -373,12 +380,15 @@ class ImageStack(MutableSequence):
     -   :meth:`colour_hdri.ImageStack.sort`
     -   :meth:`colour_hdri.ImageStack.insert`
     -   :meth:`colour_hdri.ImageStack.from_files`
+    -   :meth:`colour_hdri.ImageStack.is_valid`
+    -   :meth:`colour_hdri.ImageStack.clear_data`
+    -   :meth:`colour_hdri.ImageStack.clear_metadata`
     """
 
     def __init__(self) -> None:
         self._data: List = []
 
-    def __getitem__(self, index: int | slice) -> Any | MutableSequence[Any]:
+    def __getitem__(self, index: int | slice) -> Image | List[Image]:  # pyright: ignore
         """
         Return the :class:`colour_hdri.Image` class instance at given index.
 
@@ -395,7 +405,7 @@ class ImageStack(MutableSequence):
 
         return self._data[index]
 
-    def __setitem__(self, index: int | slice, value: Any):
+    def __setitem__(self, index: int | slice, value: Image) -> None:  # pyright: ignore
         """
         Set given :class:`colour_hdri.Image` class instance at given index.
 
@@ -407,9 +417,9 @@ class ImageStack(MutableSequence):
             :class:`colour_hdri.Image` class instance to set.
         """
 
-        self._data[index] = value
+        self._data[index] = value  # pyright: ignore
 
-    def __delitem__(self, index: int | slice):
+    def __delitem__(self, index: int | slice) -> None:
         """
         Delete the :class:`colour_hdri.Image` class instance at given index.
 
@@ -449,24 +459,26 @@ class ImageStack(MutableSequence):
 
         try:
             return self.__dict__[attribute]
-        except KeyError as error:
+        except KeyError as exception:
             if hasattr(Image, attribute):
                 value = [getattr(image, attribute) for image in self]
+
                 if attribute == "data":
                     return tstack(value)
-                else:
-                    return tuple(value)
-            # TODO: Revise then "MixinDataclassArray" is improved.
-            elif attribute in [field.name for field in fields(Metadata)]:
-                value = [getattr(image.metadata, attribute) for image in self]
-                return as_float_array(value)
-            else:
-                raise AttributeError(
-                    f"'{self.__class__.__name__}' object has no attribute "
-                    f"'{attribute}'"
-                ) from error
 
-    def __setattr__(self, attribute: str, value: Any):
+                return tuple(value)
+
+            # TODO: Revise then "MixinDataclassArray" is improved.
+            if attribute in [field.name for field in fields(Metadata)]:
+                value = [getattr(image.metadata, attribute) for image in self]
+
+                return as_float_array(value)
+
+            error = f"'{self.__class__.__name__}' object has no attribute '{attribute}'"
+
+            raise AttributeError(error) from exception
+
+    def __setattr__(self, attribute: str, value: Any) -> None:
         """
         Set given value to the attribute with given name.
 
@@ -492,7 +504,7 @@ class ImageStack(MutableSequence):
         else:
             super().__setattr__(attribute, value)
 
-    def insert(self, index: int, value: Any):
+    def insert(self, index: int, value: Any) -> None:
         """
         Insert given :class:`colour_hdri.Image` class instance at given index.
 
@@ -506,7 +518,7 @@ class ImageStack(MutableSequence):
 
         self._data.insert(index, value)
 
-    def sort(self, key: Callable | None = None):
+    def sort(self, key: Callable | None = None) -> None:
         """
         Sort the underlying data structure.
 
@@ -562,9 +574,33 @@ class ImageStack(MutableSequence):
                     f"luminance sorting is inapplicable!"
                 )
                 return None
-            else:
-                return 1 / average_luminance(f_number, exposure_time, iso)
+            return 1 / average_luminance(f_number, exposure_time, iso)
 
         image_stack.sort(luminance_average_key)
 
         return image_stack
+
+    def is_valid(self) -> bool:
+        """
+        Return whether the image stack is valid, i.e., whether all the image
+        data and metadata is defined.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the image stack is valid.
+        """
+
+        return all(not (image.data is None or image.metadata is None) for image in self)
+
+    def clear_data(self) -> None:
+        """Clear the image stack image data."""
+
+        for i in range(len(self)):
+            self[i].data = None  # pyright: ignore
+
+    def clear_metadata(self) -> None:
+        """Clear the image stack metadata."""
+
+        for i in range(len(self)):
+            self[i].metadata = None  # pyright: ignore

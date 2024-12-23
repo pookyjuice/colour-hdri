@@ -37,7 +37,7 @@ __all__ += [
 class models(ModuleAPI):
     """Define a class acting like the *models* module."""
 
-    def __getattr__(self, attribute) -> Any:
+    def __getattr__(self, attribute: str) -> Any:
         """Return the value from the attribute with given name."""
 
         return super().__getattr__(attribute)
