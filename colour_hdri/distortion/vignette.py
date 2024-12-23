@@ -32,6 +32,7 @@ References
 
 from __future__ import annotations
 
+import typing
 from dataclasses import dataclass
 
 import numpy as np
@@ -40,10 +41,16 @@ from colour.algebra import (
     linear_conversion,
     polar_to_cartesian,
 )
+
+if typing.TYPE_CHECKING:
+    from colour.hints import (
+        Any,
+        ArrayLike,
+        Callable,
+        Literal,
+    )
+
 from colour.hints import (
-    ArrayLike,
-    Callable,
-    Literal,
     NDArrayFloat,
     Tuple,
     cast,
@@ -207,7 +214,7 @@ def parabolic_2D_function(
     a_y2: float,
     a_y1: float,
     a_y0: float,
-):
+) -> NDArrayFloat:
     """
     Evaluate a parabolic 2D function on given coordinate matrices from
     coordinate vectors.
@@ -272,7 +279,7 @@ def hyperbolic_cosine_2D_function(
     r_y: float,
     y_0: float,
     c: float,
-):
+) -> NDArrayFloat:
     """
     Evaluate a hyperbolic cosine 2D function on given coordinate matrices from
     coordinate vectors.
@@ -325,9 +332,7 @@ def hyperbolic_cosine_2D_function(
     x = linear_conversion(x, (0, 1), (-0.5, 0.5))
     y = linear_conversion(y, (0, 1), (-0.5, 0.5))
 
-    I_v = 1 - (np.cosh(r_x * (x - x_0)) * np.cosh(r_y * (y - y_0))) + c
-
-    return I_v
+    return 1 - (np.cosh(r_x * (x - x_0)) * np.cosh(r_y * (y - y_0))) + c
 
 
 @dataclass
@@ -456,7 +461,7 @@ def characterise_vignette_2D_function(
 
     parameters = []
     for i in range(channels):
-        parameters.append(
+        parameters.append(  # noqa: PERF401
             curve_fit(
                 vignette_characterisation_function,
                 (
@@ -713,7 +718,7 @@ def radial_sampling_function(
 
 
 def vignette_sampling_coordinates(
-    principal_point: ArrayLike = np.array([0.5, 0.5]),
+    principal_point: ArrayLike = (0.5, 0.5),
     aspect_ratio: float = 1,
     diagonal_samples: int = 10,
     diagonal_selection: int = 2,
@@ -807,14 +812,12 @@ def vignette_sampling_coordinates(
 
     coordinates = np.vstack([coordinates, radial_samples])
 
-    coordinates = coordinates[
+    return coordinates[
         np.logical_and(
             np.all(coordinates >= 0, axis=-1),
             np.all(coordinates <= 1, axis=-1),
         )
     ]
-
-    return coordinates
 
 
 def characterise_vignette_RBF(
@@ -968,7 +971,7 @@ Supported vignette characterisation methods.
 def characterise_vignette(
     image: ArrayLike,
     method: Literal["2D Function", "Bivariate Spline", "RBF"] | str = "RBF",
-    **kwargs,
+    **kwargs: Any,
 ) -> DataVignetteCharacterisation:
     """
     Characterise the vignette of given image using given method.
@@ -1059,7 +1062,7 @@ def correct_vignette(
     image: ArrayLike,
     characterisation_data: DataVignetteCharacterisation,
     method: Literal["2D Function", "Bivariate Spline", "RBF"] | str = "RBF",
-    **kwargs,
+    **kwargs: Any,
 ) -> NDArrayFloat:
     """
     Correct the vignette of given image using given method.

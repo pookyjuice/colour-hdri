@@ -45,15 +45,15 @@ def is_rawpy_installed(raise_exception: bool = False) -> bool:
 
     try:  # pragma: no cover
         import rawpy  # noqa: F401
-
-        return True
-    except ImportError as error:  # pragma: no cover
+    except ImportError as exception:  # pragma: no cover
         if raise_exception:
-            raise ImportError(
-                '"rawpy" related API features are not available: "{error}".'
-            ) from error
+            error = f'"rawpy" related API features are not available: "{exception}".'
+
+            raise ImportError(error) from exception
 
         return False
+    else:
+        return True
 
 
 def is_lensfunpy_installed(raise_exception: bool = False) -> bool:
@@ -78,15 +78,17 @@ def is_lensfunpy_installed(raise_exception: bool = False) -> bool:
 
     try:  # pragma: no cover
         import lensfunpy  # noqa: F401
-
-        return True
-    except ImportError as error:  # pragma: no cover
+    except ImportError as exception:  # pragma: no cover
         if raise_exception:
-            raise ImportError(
-                '"lensfunpy" related API features are not available: "{error}".'
-            ) from error
+            error = (
+                f'"lensfunpy" related API features are not available: "{exception}".'
+            )
+
+            raise ImportError(error) from exception
 
         return False
+    else:
+        return True
 
 
 def is_opencv_installed(raise_exception: bool = False) -> bool:
@@ -111,15 +113,15 @@ def is_opencv_installed(raise_exception: bool = False) -> bool:
 
     try:  # pragma: no cover
         import cv2  # noqa: F401
-
-        return True
-    except ImportError as error:  # pragma: no cover
+    except ImportError as exception:  # pragma: no cover
         if raise_exception:
-            raise ImportError(
-                '"OpenCV" related API features are not available: "{error}".'
-            ) from error
+            error = f'"OpenCV" related API features are not available: "{exception}".'
+
+            raise ImportError(error) from exception
 
         return False
+    else:
+        return True
 
 
 colour.utilities.requirements.REQUIREMENTS_TO_CALLABLE.update(

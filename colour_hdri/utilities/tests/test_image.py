@@ -31,12 +31,12 @@ class TestImage:
     methods.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Initialise the common tests attributes."""
 
         self._test_jpg_image = filter_files(ROOT_RESOURCES_FROBISHER_001, ("jpg",))[0]
 
-    def test_required_attributes(self):
+    def test_required_attributes(self) -> None:
         """Test the presence of required attributes."""
 
         required_attributes = ("path", "data", "metadata")
@@ -44,7 +44,7 @@ class TestImage:
         for attribute in required_attributes:
             assert attribute in dir(Image)
 
-    def test_required_methods(self):
+    def test_required_methods(self) -> None:
         """Test the presence of required methods."""
 
         required_methods = ("__init__", "read_data", "read_metadata")
@@ -52,7 +52,7 @@ class TestImage:
         for method in required_methods:
             assert method in dir(Image)
 
-    def test_read_data(self):
+    def test_read_data(self) -> None:
         """Test :attr:`colour_hdri.utilities.image.Image.read_data` method."""
 
         image = Image(self._test_jpg_image)
@@ -60,7 +60,7 @@ class TestImage:
         assert image.data is None
         assert image.read_data().shape == (426, 640, 3)
 
-    def test_read_metadata(self):
+    def test_read_metadata(self) -> None:
         """Test :attr:`colour_hdri.utilities.image.Image.end` method."""
 
         image = Image(self._test_jpg_image)
@@ -78,14 +78,14 @@ class TestImageStack:
     methods.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Initialise the common tests attributes."""
 
         self._test_jpg_images = filter_files(ROOT_RESOURCES_FROBISHER_001, ("jpg",))
 
         self._image_stack = ImageStack().from_files(self._test_jpg_images)
 
-    def test_required_methods(self):
+    def test_required_methods(self) -> None:
         """Test the presence of required methods."""
 
         required_methods = (
@@ -98,12 +98,13 @@ class TestImageStack:
             "__setattr__",
             "insert",
             "from_files",
+            "is_valid",
         )
 
         for method in required_methods:
             assert method in dir(ImageStack)
 
-    def test__getitem__(self):
+    def test__getitem__(self) -> None:
         """
         Test :attr:`colour_hdri.utilities.image.ImageStack.__getitem__`
         method.
@@ -112,7 +113,7 @@ class TestImageStack:
         for image in self._image_stack:
             assert isinstance(image, Image)
 
-    def test__setitem__(self):
+    def test__setitem__(self) -> None:
         """
         Test :attr:`colour_hdri.utilities.image.ImageStack.__setitem__`
         method.
@@ -126,7 +127,7 @@ class TestImageStack:
 
         assert image_stack[0] == image
 
-    def test__delitem__(self):
+    def test__delitem__(self) -> None:
         """
         Test :attr:`colour_hdri.utilities.image.ImageStack.__delitem__`
         method.
@@ -138,12 +139,12 @@ class TestImageStack:
 
         assert len(image_stack) == 2
 
-    def test__len__(self):
+    def test__len__(self) -> None:
         """Test :attr:`colour_hdri.utilities.image.ImageStack.__len__` method."""
 
         assert len(self._image_stack) == 3
 
-    def test__getattr__(self):
+    def test__getattr__(self) -> None:
         """
         Test :attr:`colour_hdri.utilities.image.ImageStack.__getattr__`
         method.
@@ -157,7 +158,7 @@ class TestImageStack:
             atol=TOLERANCE_ABSOLUTE_TESTS,
         )
 
-        assert self._image_stack[0].metadata.f_number == 8
+        assert self._image_stack[0].metadata.f_number == 8  # pyright: ignore
 
         np.testing.assert_allclose(
             self._image_stack.exposure_time,
@@ -165,15 +166,15 @@ class TestImageStack:
             atol=TOLERANCE_ABSOLUTE_TESTS,
         )
 
-        assert self._image_stack[0].metadata.exposure_time == 0.125
+        assert self._image_stack[0].metadata.exposure_time == 0.125  # pyright: ignore
 
         np.testing.assert_array_equal(
             self._image_stack.black_level, np.array([np.nan, np.nan, np.nan])
         )
 
-        assert self._image_stack[0].metadata.black_level is None
+        assert self._image_stack[0].metadata.black_level is None  # pyright: ignore
 
-    def test__setattr__(self):
+    def test__setattr__(self) -> None:
         """
         Test :attr:`colour_hdri.utilities.image.ImageStack.__getattr__`
         method.
@@ -201,7 +202,7 @@ class TestImageStack:
             atol=TOLERANCE_ABSOLUTE_TESTS,
         )
 
-        assert image_stack[0].metadata.f_number == 1
+        assert image_stack[0].metadata.f_number == 1  # pyright: ignore
 
         np.testing.assert_array_equal(
             image_stack.black_level, np.array([np.nan, np.nan, np.nan])
@@ -215,13 +216,22 @@ class TestImageStack:
             atol=TOLERANCE_ABSOLUTE_TESTS,
         )
 
-        assert image_stack[0].metadata.black_level == 2048
+        assert image_stack[0].metadata.black_level == 2048  # pyright: ignore
 
-    def test_from_files(self):
+    def test_from_files(self) -> None:
         """
-        Test :attr:`colour_hdri.utilities.image.ImageStack.test_from_files`
-        method.
+        Test :attr:`colour_hdri.utilities.image.ImageStack.from_files` method.
         """
 
-        image_stack = ImageStack().from_files(reversed(self._test_jpg_images))
+        image_stack = ImageStack().from_files(list(reversed(self._test_jpg_images)))
+
         assert list(image_stack.path) == self._test_jpg_images
+
+    def test_is_valid(self) -> None:
+        """
+        Test :attr:`colour_hdri.utilities.image.ImageStack.is_valid` method.
+        """
+
+        assert self._image_stack.is_valid()
+
+        assert ImageStack().is_valid()

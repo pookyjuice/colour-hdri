@@ -9,6 +9,11 @@ HDR image processing.
 from __future__ import annotations
 
 import os
+import typing
+
+if typing.TYPE_CHECKING:
+    from colour import RGB_Colourspace
+    from colour.hints import Any, Dict, List, Tuple
 
 from colour.utilities import (
     ExecutionNode,
@@ -67,7 +72,7 @@ class GraphRawProcessingDNG(ExecutionNode, PortGraph):
     -   :meth:`~colour_hdri.GraphRawProcessingDNG.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -325,7 +330,7 @@ class GraphRawProcessingDNG(ExecutionNode, PortGraph):
             "path",
         )
 
-    def process(self, **kwargs) -> None:
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node-graph.
         """
@@ -354,7 +359,7 @@ class GraphRawProcessingCameraSensitivities(ExecutionNode, PortGraph):
     -   :meth:`~colour_hdri.GraphRawProcessingCameraSensitivities.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -622,7 +627,7 @@ class GraphRawProcessingCameraSensitivities(ExecutionNode, PortGraph):
             "path",
         )
 
-    def process(self, **kwargs) -> None:
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node-graph.
         """
@@ -650,7 +655,7 @@ class GraphMergeHDRI(ExecutionNode, PortGraph):
     -   :meth:`~colour_hdri.GraphMergeHDRI.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = 'Merge the given "EXR" files to HDRI'
@@ -777,7 +782,7 @@ class GraphMergeHDRI(ExecutionNode, PortGraph):
             "path",
         )
 
-    def process(self, **kwargs) -> None:
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node-graph.
         """
@@ -814,7 +819,7 @@ class GraphMergeHDRI(ExecutionNode, PortGraph):
         self.set_output("output", self.get_input("output_file_path"))
 
 
-def _task_multiprocess_post_merge_hdr(args):
+def _task_multiprocess_post_merge_hdr(args: List) -> Tuple[int, str]:
     i, element, sub_graph, node = args
 
     node.log(f"Index {i}, Element {element}", "info")
@@ -838,7 +843,7 @@ class GraphPostMergeHDRI(ExecutionNode, PortGraph):
     -   :meth:`~colour_hdri.GraphPostMergeHDRI.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -893,7 +898,7 @@ class GraphPostMergeHDRI(ExecutionNode, PortGraph):
             "task", _task_multiprocess_post_merge_hdr
         )
 
-    def process(self, **kwargs) -> None:
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node-graph.
         """
@@ -915,7 +920,7 @@ class GraphBatchMergeHDRI(ExecutionNode, PortGraph):
     -   :meth:`~colour_hdri.GraphBatchMergeHDRI.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Batch-merge to HDRI the input files"
@@ -997,7 +1002,7 @@ class GraphBatchMergeHDRI(ExecutionNode, PortGraph):
             "results", self.nodes["GraphPostMergeHDRI"], "array"
         )
 
-    def process(self, **kwargs) -> None:
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node-graph.
         """
@@ -1010,12 +1015,15 @@ class GraphBatchMergeHDRI(ExecutionNode, PortGraph):
                 zip(
                     self.nodes["ParallelForMultiprocess"].get_output("results"),  # pyright: ignore
                     self.nodes["GraphPostMergeHDRI"].get_output("output"),  # pyright: ignore
+                    strict=False,
                 )
             ),
         )
 
 
-def _task_multiprocess_graph_hdri(args):
+def _task_multiprocess_graph_hdri(
+    args: List,
+) -> Tuple[int, Tuple[str, Dict, InputTransform, str | RGB_Colourspace]]:
     i, element, sub_graph, node = args
 
     node.log(f"Index {i}, Element {element}", "info")
@@ -1046,7 +1054,7 @@ class GraphHDRI(ExecutionNode, PortGraph):
     -   :meth:`~colour_hdri.GraphHDRI.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -1198,11 +1206,11 @@ class GraphHDRI(ExecutionNode, PortGraph):
         self.nodes["ParallelForMultiprocess"].set_input(
             "task", _task_multiprocess_graph_hdri
         )
-        self.nodes["GraphRawProcessingCameraSensitivities"].nodes[
+        self.nodes["GraphRawProcessingCameraSensitivities"].nodes[  # pyright: ignore
             "Watermark"
         ].set_input("include_exposure_information", False)
 
-    def process(self, **kwargs) -> None:
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node-graph.
         """

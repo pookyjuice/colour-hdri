@@ -19,22 +19,29 @@ import logging
 import platform
 import re
 import subprocess
-from collections import defaultdict
+import typing
+
+if typing.TYPE_CHECKING:
+    from collections import defaultdict
+
 from dataclasses import dataclass, field
 from fractions import Fraction
 
 import numpy as np
 from colour.constants import DTYPE_FLOAT_DEFAULT
-from colour.hints import (
-    DTypeFloat,
-    DTypeReal,
-    List,
-    NDArray,
-    Real,
-    Sequence,
-    SupportsIndex,
-    Type,
-)
+
+if typing.TYPE_CHECKING:
+    from colour.hints import (
+        DTypeFloat,
+        DTypeReal,
+        List,
+        NDArray,
+        Real,
+        Sequence,
+        SupportsIndex,
+        Type,
+    )
+
 from colour.utilities import as_array, as_float_scalar, optional
 from colour.utilities.documentation import (
     DocstringText,
@@ -240,8 +247,8 @@ def parse_exif_data(data: str) -> List:
                 search.group("value"),
             )
         ]
-    else:
-        raise ValueError("The EXIF data output cannot be parsed!")
+    msg = "The EXIF data output cannot be parsed!"
+    raise ValueError(msg)
 
 
 def read_exif_tags(image: str, numeric: bool = False) -> defaultdict:
