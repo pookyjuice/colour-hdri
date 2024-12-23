@@ -381,6 +381,8 @@ class ImageStack(MutableSequence[Image]):
     -   :meth:`colour_hdri.ImageStack.insert`
     -   :meth:`colour_hdri.ImageStack.from_files`
     -   :meth:`colour_hdri.ImageStack.is_valid`
+    -   :meth:`colour_hdri.ImageStack.clear_data`
+    -   :meth:`colour_hdri.ImageStack.clear_metadata`
     """
 
     def __init__(self) -> None:
@@ -590,3 +592,15 @@ class ImageStack(MutableSequence[Image]):
         """
 
         return all(not (image.data is None or image.metadata is None) for image in self)
+
+    def clear_data(self) -> None:
+        """Clear the image stack image data."""
+
+        for i in range(len(self)):
+            self[i].data = None  # pyright: ignore
+
+    def clear_metadata(self) -> None:
+        """Clear the image stack metadata."""
+
+        for i in range(len(self)):
+            self[i].metadata = None  # pyright: ignore

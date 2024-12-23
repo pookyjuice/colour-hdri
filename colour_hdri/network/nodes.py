@@ -1089,7 +1089,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         import cv2
         import lensfunpy
 
-        database = lensfunpy.Database()
+        database = lensfunpy.Database()  # pyright: ignore
 
         camera_make = exif_group["Make"]
         camera_model = exif_group["Camera Model Name"]
@@ -1138,7 +1138,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
             aperture,
             distance,
             pixel_format=np.float32,
-            flags=lensfunpy.ModifyFlags.ALL,
+            flags=lensfunpy.ModifyFlags.ALL,  # pyright: ignore
         )
 
         output_image = input_image
@@ -1468,6 +1468,8 @@ class NodeMergeImageStack(ExecutionNode):
             "image",
             image_stack_to_HDRI(image_stack, self.get_input("weighting_function")),
         )
+
+        image_stack.clear_data()
 
         self.dirty = False
 

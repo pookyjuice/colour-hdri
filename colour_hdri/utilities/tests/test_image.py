@@ -99,6 +99,8 @@ class TestImageStack:
             "insert",
             "from_files",
             "is_valid",
+            "clear_data",
+            "clear_metadata",
         )
 
         for method in required_methods:
@@ -235,3 +237,33 @@ class TestImageStack:
         assert self._image_stack.is_valid()
 
         assert ImageStack().is_valid()
+
+    def test_clear_data(self) -> None:
+        """
+        Test :attr:`colour_hdri.utilities.image.ImageStack.clear_data` method.
+        """
+
+        image_stack = ImageStack().from_files(list(self._test_jpg_images))
+
+        assert image_stack.is_valid()
+
+        image_stack.clear_data()
+
+        assert image_stack[0].data is None  # pyright: ignore
+
+        assert not image_stack.is_valid()
+
+    def test_clear_metadata(self) -> None:
+        """
+        Test :attr:`colour_hdri.utilities.image.ImageStack.clear_metadata` method.
+        """
+
+        image_stack = ImageStack().from_files(list(self._test_jpg_images))
+
+        assert image_stack.is_valid()
+
+        image_stack.clear_metadata()
+
+        assert image_stack[0].metadata is None  # pyright: ignore
+
+        assert not image_stack.is_valid()
