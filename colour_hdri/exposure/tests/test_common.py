@@ -32,7 +32,7 @@ class TestAverageLuminance:
     unit tests methods.
     """
 
-    def test_average_luminance(self):
+    def test_average_luminance(self) -> None:
         """Test :func:`colour_hdri.exposure.common.average_luminance` definition."""
 
         np.testing.assert_allclose(
@@ -52,7 +52,7 @@ class TestAverageIlluminance:
     unit tests methods.
     """
 
-    def test_average_illuminance(self):
+    def test_average_illuminance(self) -> None:
         """
         Test :func:`colour_hdri.exposure.common.average_illuminance`
         definition.
@@ -75,7 +75,7 @@ class TestLuminanceToExposureValue:
     definition unit tests methods.
     """
 
-    def test_luminance_to_exposure_value(self):
+    def test_luminance_to_exposure_value(self) -> None:
         """
         Test :func:`colour_hdri.exposure.common.luminance_to_exposure_value`
         definition.
@@ -98,7 +98,7 @@ class TestIlluminanceToExposureValue:
     definition unit tests methods.
     """
 
-    def test_illuminance_to_exposure_value(self):
+    def test_illuminance_to_exposure_value(self) -> None:
         """
         Test :func:`colour_hdri.exposure.common.illuminance_to_exposure_value`
         definition.
@@ -121,7 +121,7 @@ class TestAdjustExposure:
     unit tests methods.
     """
 
-    def test_adjust_exposure(self):
+    def test_adjust_exposure(self) -> None:
         """Test :func:`colour_hdri.exposure.common.adjust_exposure` definition."""
 
         np.testing.assert_allclose(

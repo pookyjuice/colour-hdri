@@ -22,14 +22,21 @@ References
 
 from __future__ import annotations
 
+import typing
+
 import numpy as np
 from colour.constants import EPSILON
-from colour.hints import ArrayLike, Callable, NDArrayFloat
-from colour.utilities import as_float_array, tsplit, tstack, warning
+
+if typing.TYPE_CHECKING:
+    from colour.hints import ArrayLike, Callable, NDArrayFloat
+
+from colour.utilities import as_float_array, attest, tsplit, tstack, warning
 
 from colour_hdri.exposure import average_luminance
 from colour_hdri.generation import weighting_function_Debevec1997
-from colour_hdri.utilities import ImageStack
+
+if typing.TYPE_CHECKING:
+    from colour_hdri.utilities import Image, ImageStack
 
 __author__ = "Colour Developers"
 __copyright__ = "Copyright 2015 Colour Developers"
@@ -47,7 +54,7 @@ def image_stack_to_HDRI(
     image_stack: ImageStack,
     weighting_function: Callable = weighting_function_Debevec1997,
     camera_response_functions: ArrayLike | None = None,
-) -> NDArrayFloat | None:
+) -> NDArrayFloat:
     """
     Generate a HDRI from given image stack.
 
@@ -85,52 +92,51 @@ def image_stack_to_HDRI(
     :cite:`Banterle2011n`
     """
 
-    image_c: NDArrayFloat | None = None
-    weight_c: NDArrayFloat | None = None
-    for i, image in enumerate(image_stack):
-        if image.data is not None and image.metadata is not None:
-            if image_c is None:
-                image_c = np.zeros(image.data.shape)
-                weight_c = np.zeros(image.data.shape)
+    attest(len(image_stack) > 0, "Image stack cannot be empty!")
 
-            L = 1 / average_luminance(
-                image.metadata.f_number,
-                image.metadata.exposure_time,
-                image.metadata.iso,
+    attest(image_stack.is_valid(), "Image stack is invalid!")
+
+    image_c = np.zeros(image_stack[0].data.shape)  # pyright: ignore
+    weight_c = np.zeros(image_stack[0].data.shape)  # pyright: ignore
+
+    for i, image in enumerate(image_stack):
+        image: Image
+
+        L = 1 / average_luminance(
+            image.metadata.f_number,  # pyright: ignore
+            image.metadata.exposure_time,  # pyright: ignore
+            image.metadata.iso,  # pyright: ignore
+        )
+
+        if np.any(image.data <= 0):  # pyright: ignore
+            warning(
+                f'"{image.path}" image channels contain negative or equal '
+                f"to zero values, unpredictable results may occur! Please "
+                f"consider encoding your images in a wider gamut RGB "
+                f"colourspace."
             )
 
-            if np.any(image.data <= 0):
-                warning(
-                    f'"{image.path}" image channels contain negative or equal '
-                    f"to zero values, unpredictable results may occur! Please "
-                    f"consider encoding your images in a wider gamut RGB "
-                    f"colourspace."
-                )
+        image_data = np.clip(image.data, EPSILON, 1)  # pyright: ignore
 
-            image_data = np.clip(image.data, EPSILON, 1)
+        weights = np.clip(weighting_function(image_data), EPSILON, 1)
 
-            weights = np.clip(weighting_function(image_data), EPSILON, 1)
+        if i == 0:
+            weights[image_data >= 0.5] = 1
 
-            if i == 0:
-                weights[image_data >= 0.5] = 1
+        if i == len(image_stack) - 1:
+            weights[image_data <= 0.5] = 1
 
-            if i == len(image_stack) - 1:
-                weights[image_data <= 0.5] = 1
+        if camera_response_functions is not None:
+            camera_response_functions = as_float_array(camera_response_functions)
+            samples = np.linspace(0, 1, camera_response_functions.shape[0])
 
-            if camera_response_functions is not None:
-                camera_response_functions = as_float_array(camera_response_functions)
-                samples = np.linspace(0, 1, camera_response_functions.shape[0])
+            R, G, B = tsplit(image_data)
+            R = np.interp(R, samples, camera_response_functions[..., 0])
+            G = np.interp(G, samples, camera_response_functions[..., 1])
+            B = np.interp(B, samples, camera_response_functions[..., 2])
+            image_data = tstack([R, G, B])
 
-                R, G, B = tsplit(image_data)
-                R = np.interp(R, samples, camera_response_functions[..., 0])
-                G = np.interp(G, samples, camera_response_functions[..., 1])
-                B = np.interp(B, samples, camera_response_functions[..., 2])
-                image_data = tstack([R, G, B])
+        image_c += weights * image_data / L
+        weight_c += weights
 
-            image_c += weights * image_data / L
-            weight_c += weights
-
-    if image_c is not None and weight_c is not None:
-        image_c /= weight_c
-
-    return image_c
+    return image_c / weight_c

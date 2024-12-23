@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import time
+import typing
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -31,7 +32,10 @@ from colour import (
 )
 from colour.algebra import vecmul
 from colour.characterisation import RGB_CameraSensitivities
-from colour.hints import Any, NDArray
+
+if typing.TYPE_CHECKING:
+    from colour.hints import Any, NDArrayFloat
+
 from colour.io import (
     Image_Specification_Attribute,
     convert_bit_depth,
@@ -132,11 +136,11 @@ class JSONEncoderEXRAttribute(json.JSONEncoder):
 
         if isinstance(o, CanonicalMapping):
             return dict(o.items())
-        elif isinstance(o, (np.float32, np.float64)):  # pyright: ignore
+        if isinstance(o, (np.float32, np.float64)):  # pyright: ignore
             return float(o)
-        elif isinstance(o, (np.int32, np.int64)):  # pyright: ignore
+        if isinstance(o, (np.int32, np.int64)):  # pyright: ignore
             return int(o)
-        elif isinstance(o, np.ndarray):
+        if isinstance(o, np.ndarray):
             return o.tolist()
 
         return super().default(o)
@@ -155,10 +159,10 @@ class InputTransform:
         White balance multipliers :math:`RGB_w`.
     """
 
-    M: NDArray = field(default_factory=lambda: np.identity(3))
-    RGB_w: NDArray = field(default_factory=lambda: ones(3))
+    M: NDArrayFloat = field(default_factory=lambda: np.identity(3))
+    RGB_w: NDArrayFloat = field(default_factory=lambda: ones(3))
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Return whether the input transform is equal to given other object.
 
@@ -189,7 +193,7 @@ class NodeConvertRawFileToDNGFile(ExecutionNode):
     -   :meth:`~colour_hdri.NodeConvertRawFileToDNGFile.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = 'Convert given raw file, e.g., "CR2", "CR3", "NEF", to "DNG"'
@@ -200,7 +204,7 @@ class NodeConvertRawFileToDNGFile(ExecutionNode):
         self.add_input_port("dng_converter_arguments")
         self.add_output_port("dng_file_path")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -258,7 +262,7 @@ class NodeReadImage(ExecutionNode):
     -   :meth:`~colour_hdri.NodeReadImage.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -272,7 +276,7 @@ class NodeReadImage(ExecutionNode):
         self.add_output_port("exif_tags")
 
     @required("OpenImageIO")
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -315,7 +319,7 @@ class NodeWriteImage(ExecutionNode):
     -   :meth:`~colour_hdri.NodeWriteImage.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -330,7 +334,7 @@ class NodeWriteImage(ExecutionNode):
         self.add_input_port("bypass", False)
 
     @required("OpenImageIO")
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -370,7 +374,7 @@ class NodeWriteImage(ExecutionNode):
         self.dirty = False
 
 
-def _cctf_encoding_preview(a):
+def _cctf_encoding_preview(a: NDArrayFloat) -> NDArrayFloat:
     """
     Encode given image :math:`a` using the Reinhard (2004) global tonemapping
     function.
@@ -390,7 +394,7 @@ class NodeWritePreviewImage(ExecutionNode):
     -   :meth:`~colour_hdri.NodeWritePreviewImage.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Write the image at input image path as a preview image"
@@ -401,7 +405,7 @@ class NodeWritePreviewImage(ExecutionNode):
         self.add_output_port("preview_path")
 
     @required("OpenImageIO")
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -442,7 +446,7 @@ class NodeRemoveFile(ExecutionNode):
     -   :meth:`~colour_hdri.NodeRemoveFile.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Remove the file at input path"
@@ -450,7 +454,7 @@ class NodeRemoveFile(ExecutionNode):
         self.add_input_port("path")
         self.add_input_port("bypass", False)
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -478,7 +482,7 @@ class NodeOrient(ExecutionNode):
     -   :meth:`~colour_hdri.NodeRemoveFile.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Orient the input image"
@@ -488,7 +492,7 @@ class NodeOrient(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -523,7 +527,7 @@ class NodeWatermark(ExecutionNode):
     -   :meth:`~colour_hdri.NodeWatermark.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Watermark the input image using given input metadata"
@@ -535,7 +539,7 @@ class NodeWatermark(ExecutionNode):
         self.add_output_port("output_image")
 
     @required("OpenCV")  # pyright: ignore
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -607,7 +611,7 @@ class NodeProcessingMetadata(ExecutionNode):
     -   :meth:`~colour_hdri.NodeProcessingMetadata.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Add processing metadata to the input metadata"
@@ -621,7 +625,7 @@ class NodeProcessingMetadata(ExecutionNode):
         self.add_input_port("sources")
         self.add_output_port("output_metadata")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -674,7 +678,7 @@ class NodeReadFileExifData(ExecutionNode):
     -   :meth:`~colour_hdri.NodeReadFileExifData.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Return the EXIF tags from the input image."
@@ -682,7 +686,7 @@ class NodeReadFileExifData(ExecutionNode):
         self.add_input_port("file_path")
         self.add_output_port("exif_tags")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -710,7 +714,7 @@ class NodeReadFileMetadataDNG(ExecutionNode):
     -   :meth:`~colour_hdri.NodeReadFileMetadataDNG.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = 'Return the metadata from the input "DNG" image'
@@ -718,7 +722,7 @@ class NodeReadFileMetadataDNG(ExecutionNode):
         self.add_input_port("dng_file_path")
         self.add_output_port("metadata")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -748,7 +752,7 @@ class NodeComputeInputTransformDNG(ExecutionNode):
     -   :meth:`~colour_hdri.NodeComputeInputTransformDNG.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -761,7 +765,7 @@ class NodeComputeInputTransformDNG(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("input_transform", InputTransform())
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -870,7 +874,7 @@ class NodeComputeInputTransformCameraSensitivities(ExecutionNode):
     -   :meth:`~colour_hdri.NodeComputeInputTransformCameraSensitivities.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -884,7 +888,7 @@ class NodeComputeInputTransformCameraSensitivities(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("input_transform", InputTransform())
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -976,7 +980,7 @@ class NodeProcessRawFileRawpy(ExecutionNode):
     -   :meth:`~colour_hdri.NodeProcessRawFileRawpy.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -988,7 +992,7 @@ class NodeProcessRawFileRawpy(ExecutionNode):
         self.add_output_port("image")
 
     @required("rawpy")  # pyright: ignore
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -1011,10 +1015,10 @@ class NodeProcessRawFileRawpy(ExecutionNode):
             image = raw_file.postprocess(
                 gamma=(1, 1),
                 no_auto_bright=True,
-                demosaic_algorithm=rawpy.DemosaicAlgorithm(12),
-                fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode(2),
-                highlight_mode=rawpy.HighlightMode(5),
-                output_color=rawpy.ColorSpace(0),
+                demosaic_algorithm=rawpy.DemosaicAlgorithm(12),  # pyright: ignore
+                fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode(2),  # pyright: ignore
+                highlight_mode=rawpy.HighlightMode(5),  # pyright: ignore
+                output_color=rawpy.ColorSpace(0),  # pyright: ignore
                 output_bps=16,
                 user_wb=np.hstack(
                     [
@@ -1042,7 +1046,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
     -   :meth:`~colour_hdri.NodeCorrectLensAberrationLensFun.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -1060,7 +1064,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         self.add_output_port("output_image")
 
     @required("lensfunpy", "OpenCV")  # pyright: ignore
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -1316,7 +1320,7 @@ class NodeDownsample(ExecutionNode):
     -   :meth:`~colour_hdri.NodeDownsample.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Downsample the input image by the input downsampling factor"
@@ -1326,7 +1330,7 @@ class NodeDownsample(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -1358,7 +1362,7 @@ class NodeApplyInputTransformDNG(ExecutionNode):
     -   :meth:`~colour_hdri.NodeApplyInputTransformDNG.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -1371,7 +1375,7 @@ class NodeApplyInputTransformDNG(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -1416,7 +1420,7 @@ class NodeApplyInputTransformCameraSensitivities(ExecutionNode):
     -   :meth:`~colour_hdri.NodeApplyInputTransformCameraSensitivities.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = (
@@ -1430,7 +1434,7 @@ class NodeApplyInputTransformCameraSensitivities(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -1472,7 +1476,7 @@ class NodeCreateBatches(ExecutionNode):
     -   :meth:`~colour_hdri.NodeCreateBatches.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Create batches from the input array"
@@ -1481,7 +1485,7 @@ class NodeCreateBatches(ExecutionNode):
         self.add_input_port("batch_size", 3)
         self.add_output_port("batches", [])
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -1505,7 +1509,7 @@ class NodeCreateImageStack(ExecutionNode):
     -   :meth:`~colour_hdri.NodeCreateImageStack.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Create an image stack from the input files"
@@ -1514,7 +1518,7 @@ class NodeCreateImageStack(ExecutionNode):
         self.add_input_port("cctf_decoding", linear_function)
         self.add_output_port("image_stack")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -1545,7 +1549,7 @@ class NodeMergeImageStack(ExecutionNode):
     -   :meth:`~colour_hdri.NodeMergeImageStack.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Merge to HDRI the input image stack"
@@ -1554,7 +1558,7 @@ class NodeMergeImageStack(ExecutionNode):
         self.add_input_port("weighting_function", double_sigmoid_anchored_function)
         self.add_output_port("image")
 
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
@@ -1581,7 +1585,7 @@ class NodeNormaliseExposure(ExecutionNode):
     -   :meth:`~colour_hdri.NodeNormaliseExposure.process`
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.description = "Normalise the exposure of the input images"
@@ -1590,7 +1594,7 @@ class NodeNormaliseExposure(ExecutionNode):
         self.add_input_port("scaling_factor", 0.2)
 
     @required("OpenImageIO")
-    def process(self, **kwargs) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """

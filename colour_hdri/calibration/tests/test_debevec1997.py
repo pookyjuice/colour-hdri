@@ -6,9 +6,9 @@ module.
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
 
 import numpy as np
-from colour.hints import List
 
 from colour_hdri import ROOT_RESOURCES_TESTS
 from colour_hdri.calibration import (
@@ -18,6 +18,9 @@ from colour_hdri.calibration import (
 from colour_hdri.exposure import average_luminance
 from colour_hdri.sampling import samples_Grossberg2003
 from colour_hdri.utilities import ImageStack, filter_files
+
+if TYPE_CHECKING:
+    from colour.hints import List
 
 __author__ = "Colour Developers"
 __copyright__ = "Copyright 2015 Colour Developers"
@@ -49,7 +52,7 @@ class TestGSolve:
     unit tests methods.
     """
 
-    def test_g_solve(self):
+    def test_g_solve(self) -> None:
         """Test :func:`colour_hdri.calibration.debevec1997.g_solve` definition."""
 
         image_stack = ImageStack.from_files(IMAGES_JPG)
@@ -91,7 +94,7 @@ class TestCameraResponseFunctionsDebevec1997:
 camera_response_functions_Debevec1997` definition unit tests methods.
     """
 
-    def test_camera_response_function_Debevec1997(self):
+    def test_camera_response_function_Debevec1997(self) -> None:
         """
         Test :func:`colour_hdri.calibration.debevec1997.\
 camera_response_functions_Debevec1997` definition.

@@ -18,9 +18,13 @@ import platform
 import re
 import shlex
 import subprocess
+import typing
 
 import numpy as np
-from colour.hints import Callable, List, Mapping, Sequence, Tuple
+
+if typing.TYPE_CHECKING:
+    from colour.hints import Callable, List, Mapping, Sequence, Tuple
+
 from colour.utilities import CanonicalMapping, optional
 from colour.utilities.documentation import (
     DocstringText,

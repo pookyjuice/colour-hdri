@@ -6,12 +6,15 @@ import os
 import platform
 import shutil
 import tempfile
+import typing
 import zipfile
 
 import numpy as np
 from colour import read_image
 from colour.constants import TOLERANCE_ABSOLUTE_TESTS
-from colour.hints import List
+
+if typing.TYPE_CHECKING:
+    from colour.hints import List
 
 from colour_hdri import ROOT_RESOURCES_TESTS
 from colour_hdri.process import (
@@ -49,17 +52,17 @@ class TestConvertRawFilesToDngFiles:
 convert_raw_files_to_dng_files` definition unit tests methods.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Initialise the common tests attributes."""
 
         self._temporary_directory = tempfile.mkdtemp()
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """After tests actions."""
 
         shutil.rmtree(self._temporary_directory)
 
-    def test_convert_raw_files_to_dng_files(self):
+    def test_convert_raw_files_to_dng_files(self) -> None:
         """
         Test :func:`colour_hdri.process.adobe_dng.\
 convert_raw_files_to_dng_files` definition.
@@ -76,7 +79,7 @@ convert_raw_files_to_dng_files` definition.
         )
 
         for test_dng_file, reference_dng_file in zip(
-            test_dng_files, reference_dng_files
+            test_dng_files, reference_dng_files, strict=False
         ):
             np.testing.assert_allclose(
                 read_image(str(test_dng_file)),
@@ -91,17 +94,17 @@ class TestConvertDngFilesToIntermediateFiles:
 convert_dng_files_to_intermediate_files` definition unit tests methods.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Initialise the common tests attributes."""
 
         self._temporary_directory = tempfile.mkdtemp()
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """After tests actions."""
 
         shutil.rmtree(self._temporary_directory)
 
-    def test_convert_dng_files_to_intermediate_files(self):
+    def test_convert_dng_files_to_intermediate_files(self) -> None:
         """
         Test :func:`colour_hdri.process.adobe_dng.\
 convert_dng_files_to_intermediate_files` definition.
@@ -115,7 +118,7 @@ convert_dng_files_to_intermediate_files` definition.
             for reference_dng_file in reference_dng_files
         ]
         for reference_dng_file, tests_dng_file in zip(
-            reference_dng_files, tests_dng_files
+            reference_dng_files, tests_dng_files, strict=False
         ):
             shutil.copyfile(reference_dng_file, tests_dng_file)
 
@@ -153,7 +156,7 @@ convert_dng_files_to_intermediate_files` definition.
         )
 
         for test_tiff_file, reference_tiff_file in zip(
-            test_tiff_files, reference_tiff_files
+            test_tiff_files, reference_tiff_files, strict=False
         ):
             np.testing.assert_allclose(
                 read_image(str(test_tiff_file)),
@@ -168,7 +171,7 @@ class TestReadDngFilesExifTags:
 read_dng_files_exif_tags` definition unit tests methods.
     """
 
-    def test_read_dng_files_exif_tags(self):
+    def test_read_dng_files_exif_tags(self) -> None:
         """
         Test :func:`colour_hdri.process.adobe_dng.\
 read_dng_files_exif_tags` definition.

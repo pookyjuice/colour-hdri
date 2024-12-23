@@ -34,7 +34,7 @@ class TestNormalDistributionFunction:
 normal_distribution_function` definition unit tests methods.
     """
 
-    def test_normal_distribution_function(self):
+    def test_normal_distribution_function(self) -> None:
         """
         Test :func:`colour_hdri.generation.weighting_functions.\
 normal_distribution_function` definition.
@@ -104,7 +104,7 @@ class TestHatFunction:
     definition unit tests methods.
     """
 
-    def test_hat_function(self):
+    def test_hat_function(self) -> None:
         """
         Test :func:`colour_hdri.generation.weighting_functions.hat_function`
         definition.
@@ -136,7 +136,7 @@ class TestWeightingFunctionDebevec1997:
 weighting_function_Debevec1997` definition unit tests methods.
     """
 
-    def test_weighting_function_Debevec1997(self):
+    def test_weighting_function_Debevec1997(self) -> None:
         """
         Test :func:`colour_hdri.generation.weighting_functions.\
 weighting_function_Debevec1997` definition.
@@ -206,7 +206,7 @@ class TestDoubleSigmoidAnchoredFunction:
 double_sigmoid_anchored_function` definition unit tests methods.
     """
 
-    def test_double_sigmoid_anchored_function(self):
+    def test_double_sigmoid_anchored_function(self) -> None:
         """
         Test :func:`colour_hdri.generation.weighting_functions.\
 double_sigmoid_anchored_function` definition.

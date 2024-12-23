@@ -32,7 +32,6 @@ import sys
 
 import colour
 import numpy as np
-from colour.hints import Any
 from colour.utilities import is_matplotlib_installed
 from colour.utilities.deprecation import ModuleAPI, build_API_changes
 from colour.utilities.documentation import is_documentation_building
@@ -160,6 +159,10 @@ from .network import (
     NodeWriteImage,
     NodeWritePreviewImage,
 )
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from colour.hints import Any
 
 # Exposing "colour.plotting" sub-package if "Matplotlib" is available.
 if is_matplotlib_installed():
@@ -172,7 +175,7 @@ else:
         if the sub-package is accessed but *Matplotlib* is not installed.
         """
 
-        def __getattr__(self, attribute) -> Any:
+        def __getattr__(self, attribute: str) -> Any:
             """Return the value from the attribute with given name."""
 
             is_matplotlib_installed(raise_exception=True)
@@ -327,7 +330,7 @@ __application_name__ = "Colour - HDRI"
 __major_version__ = "0"
 __minor_version__ = "2"
 __change_version__ = "5"
-__version__ = ".".join((__major_version__, __minor_version__, __change_version__))
+__version__ = f"{__major_version__}.{__minor_version__}.{__change_version__}"
 
 try:
     _version: str = (
@@ -339,7 +342,7 @@ try:
         .strip()
         .decode("utf-8")
     )
-except Exception:
+except Exception:  # noqa: BLE001
     _version: str = __version__
 
 colour.utilities.ANCILLARY_COLOUR_SCIENCE_PACKAGES["colour-hdri"] = _version  # pyright: ignore
@@ -378,7 +381,7 @@ with contextlib.suppress(TypeError):
 class colour_hdri(ModuleAPI):
     """Define a class acting like the *colour_hdri* module."""
 
-    def __getattr__(self, attribute) -> Any:
+    def __getattr__(self, attribute: str) -> Any:
         """Return the value from the attribute with given name."""
 
         return super().__getattr__(attribute)
