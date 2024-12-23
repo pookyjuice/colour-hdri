@@ -38,7 +38,7 @@ pygments==2.18.0
 pyparsing==3.2.0
 python-dateutil==2.9.0.post0
 pyyaml==6.0.2
-rawpy==0.24.0 ; python_full_version < '3.13'
+rawpy==0.24.0
 requests==2.32.3
 restructuredtext-lint==1.4.0
 scipy==1.14.1
