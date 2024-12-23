@@ -36,7 +36,7 @@ from colour_hdri.exposure import average_luminance
 from colour_hdri.generation import weighting_function_Debevec1997
 
 if typing.TYPE_CHECKING:
-    from colour_hdri.utilities import Image, ImageStack
+    from colour_hdri.utilities import ImageStack
 
 __author__ = "Colour Developers"
 __copyright__ = "Copyright 2015 Colour Developers"
@@ -100,8 +100,6 @@ def image_stack_to_HDRI(
     weight_c = np.zeros(image_stack[0].data.shape)  # pyright: ignore
 
     for i, image in enumerate(image_stack):
-        image: Image
-
         L = 1 / average_luminance(
             image.metadata.f_number,  # pyright: ignore
             image.metadata.exposure_time,  # pyright: ignore
@@ -117,7 +115,6 @@ def image_stack_to_HDRI(
             )
 
         image_data = np.clip(image.data, EPSILON, 1)  # pyright: ignore
-
         weights = np.clip(weighting_function(image_data), EPSILON, 1)
 
         if i == 0:
@@ -138,5 +135,7 @@ def image_stack_to_HDRI(
 
         image_c += weights * image_data / L
         weight_c += weights
+
+        del image_data, weights
 
     return image_c / weight_c
