@@ -1143,7 +1143,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
             aperture,
             distance,
             pixel_format=np.float32,
-            flags=lensfunpy.ModifyFlags.ALL,  # pyright: ignore
+            flags=lensfunpy.ModifyFlags.ALL,
         )
 
         output_image = input_image
