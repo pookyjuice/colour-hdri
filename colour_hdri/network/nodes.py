@@ -1089,7 +1089,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         import cv2
         import lensfunpy
 
-        database = lensfunpy.Database()  # pyright: ignore
+        database = lensfunpy.Database()
 
         camera_make = exif_group["Make"]
         camera_model = exif_group["Camera Model Name"]
@@ -1138,7 +1138,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
             aperture,
             distance,
             pixel_format=np.float32,
-            flags=lensfunpy.ModifyFlags.ALL,  # pyright: ignore
+            flags=lensfunpy.ModifyFlags.ALL,
         )
 
         output_image = input_image
