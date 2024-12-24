@@ -54,6 +54,9 @@ dependencies = [
     "typing-extensions>=4,<5",
 ]
 
+[tool.uv.sources]
+colour-science = { git = "https://github.com/colour-science/colour", branch = "develop" }
+
 [project.optional-dependencies]
 optional = [
     "colour-datasets>=0.2.6",
