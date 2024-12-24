@@ -21,6 +21,8 @@ Subpackages
 -   utilities: Various utilities and data structures.
 """
 
+# isort: skip_file
+
 from __future__ import annotations
 
 import contextlib
@@ -329,8 +331,8 @@ __version__ = ".".join((__major_version__, __minor_version__, __change_version__
 
 try:
     _version: str = (
-        subprocess.check_output(
-            ["git", "describe"],  # noqa: S603, S607
+        subprocess.check_output(  # noqa: S603
+            ["git", "describe"],  # noqa: S607
             cwd=os.path.dirname(__file__),
             stderr=subprocess.STDOUT,
         )
@@ -345,21 +347,21 @@ colour.utilities.ANCILLARY_COLOUR_SCIENCE_PACKAGES["colour-hdri"] = _version  # 
 if is_rawpy_installed():
     import rawpy
 
-    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["rawpy"] = rawpy.__version__
+    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["rawpy"] = rawpy.__version__  # pyright: ignore
 
     del rawpy
 
 if is_lensfunpy_installed():
     import lensfunpy
 
-    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["lensfunpy"] = lensfunpy.__version__
+    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["lensfunpy"] = lensfunpy.__version__  # pyright: ignore
 
     del lensfunpy
 
 if is_opencv_installed():
     import cv2
 
-    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["OpenCV"] = cv2.__version__
+    colour.utilities.ANCILLARY_RUNTIME_PACKAGES["OpenCV"] = cv2.__version__  # pyright: ignore
 
     del cv2
 

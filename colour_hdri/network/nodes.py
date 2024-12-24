@@ -115,13 +115,13 @@ class JSONEncoderEXRAttribute(json.JSONEncoder):
     attribute.
     """
 
-    def default(self, object_: Any) -> Any:
+    def default(self, o: Any) -> Any:
         """
         Return a *JSON* serialisable object from given object.
 
         Parameters
         ----------
-        object_
+        o
             Object to return a *JSON* serialisable object from.
 
         Returns
@@ -130,16 +130,16 @@ class JSONEncoderEXRAttribute(json.JSONEncoder):
             *JSON* serialisable object
         """
 
-        if isinstance(object_, CanonicalMapping):
-            return dict(object_.items())
-        elif isinstance(object_, (np.float32, np.float64)):
-            return float(object_)
-        elif isinstance(object_, (np.int32, np.int64)):
-            return int(object_)
-        elif isinstance(object_, np.ndarray):
-            return object_.tolist()
+        if isinstance(o, CanonicalMapping):
+            return dict(o.items())
+        elif isinstance(o, (np.float32, np.float64)):  # pyright: ignore
+            return float(o)
+        elif isinstance(o, (np.int32, np.int64)):  # pyright: ignore
+            return int(o)
+        elif isinstance(o, np.ndarray):
+            return o.tolist()
 
-        return super().default(object_)
+        return super().default(o)
 
 
 @dataclass
@@ -176,7 +176,7 @@ class InputTransform:
         if not isinstance(other, InputTransform):
             return False
 
-        return np.all(self.M == other.M) and np.all(self.RGB_w == other.RGB_w)
+        return np.all(self.M == other.M) and np.all(self.RGB_w == other.RGB_w)  # pyright: ignore
 
 
 class NodeConvertRawFileToDNGFile(ExecutionNode):
@@ -534,7 +534,7 @@ class NodeWatermark(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    @required("OpenCV")
+    @required("OpenCV")  # pyright: ignore
     def process(self, **kwargs) -> None:  # noqa: ARG002
         """
         Process the node.
@@ -955,7 +955,7 @@ class NodeComputeInputTransformCameraSensitivities(ExecutionNode):
                 CCT_to_xy_CIE_D(CCT_D_uv[0] * 1.4388 / 1.4380)
             )
 
-        M, RGB_w = matrix_idt(msds_sensitivities, sd_illuminant)
+        M, RGB_w = matrix_idt(msds_sensitivities, sd_illuminant)  # pyright: ignore
 
         self.log(f"Input Transform Matrix: {M}")
 
@@ -987,7 +987,7 @@ class NodeProcessRawFileRawpy(ExecutionNode):
         self.add_input_port("input_transform", InputTransform())
         self.add_output_port("image")
 
-    @required("rawpy")
+    @required("rawpy")  # pyright: ignore
     def process(self, **kwargs) -> None:  # noqa: ARG002
         """
         Process the node.
@@ -1059,7 +1059,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    @required("lensfunpy", "OpenCV")
+    @required("lensfunpy", "OpenCV")  # pyright: ignore
     def process(self, **kwargs) -> None:  # noqa: ARG002
         """
         Process the node.
@@ -1133,7 +1133,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         width = input_image.shape[1]
         height = input_image.shape[0]
 
-        modifier = lensfunpy.Modifier(lens, camera.crop_factor, width, height)
+        modifier = lensfunpy.Modifier(lens, camera.crop_factor, width, height)  # pyright: ignore
         modifier.initialize(
             focal_length,
             aperture,

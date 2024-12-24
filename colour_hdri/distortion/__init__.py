@@ -1,3 +1,5 @@
+# isort: skip_file
+
 from .vignette import (
     apply_radial_gradient,
     parabolic_2D_function,

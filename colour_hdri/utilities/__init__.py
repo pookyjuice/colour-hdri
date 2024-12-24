@@ -1,3 +1,5 @@
+# isort: skip_file
+
 from .common import vivification, vivified_to_dict, path_exists, filter_files
 from .exif import (
     EXIF_EXECUTABLE,

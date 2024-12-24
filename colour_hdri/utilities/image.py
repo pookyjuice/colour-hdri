@@ -18,7 +18,6 @@ from collections.abc import MutableSequence
 from dataclasses import dataclass, field, fields
 
 import numpy as np
-from colour.io import read_image_OpenImageIO
 from colour.hints import (
     Any,
     ArrayLike,
@@ -29,6 +28,7 @@ from colour.hints import (
     Sequence,
     cast,
 )
+from colour.io import read_image, read_image_OpenImageIO
 from colour.utilities import (
     MixinDataclassArray,
     as_float_array,
@@ -251,7 +251,7 @@ class Image:
         if self._path is not None:
             LOGGER.info('Reading "%s" image.', self._path)
 
-            data = read_image_OpenImageIO(str(self._path))
+            data = read_image(str(self._path))
             if cctf_decoding is not None:
                 data = cctf_decoding(data)
 
