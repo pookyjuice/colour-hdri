@@ -55,6 +55,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
+colour-datasets = { git = "https://github.com/colour-science/colour-datasets", branch = "develop" }
 colour-science = { git = "https://github.com/colour-science/colour", branch = "develop" }
 
 [project.optional-dependencies]
