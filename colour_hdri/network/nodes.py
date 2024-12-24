@@ -1197,20 +1197,15 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
                 # Extract the width and height of the image
                 height, width = output_image.shape[:2]
 
-                # Assuming dist_map has at least 2 channels:
-                # Split the distortion map into its respective channels
-                red_channel = st_map[:, :, 2]  # The second channel
-                green_channel = st_map[:, :, 1]  # The first channel
-
                 # Convert normalized values (0 to 1) to absolute pixel coordinates
-                map_x = (red_channel.astype(np.float32)) * (width - 1)
-                map_y = (1.0 - green_channel.astype(np.float32)) * (
-                    height - 1
-                )  # Flip y-axis by using (1.0 - value)
-
-                # Clamp values to be within valid pixel range
-                map_x = np.clip(map_x, 0, width - 1)
-                map_y = np.clip(map_y, 0, height - 1)
+                map_x = np.clip(
+                    (st_map[:, :, 2].astype(np.float32)) * (width - 1), 0, width - 1
+                )
+                map_y = np.clip(
+                    (1.0 - st_map[:, :, 1].astype(np.float32)) * (height - 1),
+                    0,
+                    height - 1,
+                )
 
                 # Apply the remap function to the input image
                 output_image = cv2.remap(
@@ -1222,15 +1217,21 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
                 )
 
                 self.log("Lens distortion was successfully corrected!")
+
+                # Explicitly free memory
+                del st_map, map_x, map_y
             else:
                 self.log(
-                    "Lens distortion was not corrected, "
-                    "the lens might be missing data."
+                    "Lens distortion was not corrected, the lens might be missing data."
                 )
 
-        self.set_output("output_image", output_image)
+            # Clean up memory
+            import gc
 
-        self.dirty = False
+            gc.collect()
+
+            self.set_output("output_image", output_image)
+            self.dirty = False
 
     def correct_chromatic_aberration_with_darktable(
         self, input_image: np.ndarray
