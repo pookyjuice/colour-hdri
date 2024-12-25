@@ -27,6 +27,7 @@ Example:
     the specified corrections, and outputs the resulting HDRI images in the
     ACEScg colour space.
 """
+
 import logging
 
 import colour
@@ -43,7 +44,7 @@ logging.basicConfig(
 )
 
 
-def weighting_function(a):
+def weighting_function(a: np.ndarray | float) -> np.ndarray | float:
     """
     Apply a double sigmoid weighting function.
 
@@ -58,6 +59,7 @@ def weighting_function(a):
     numpy.ndarray or float
         Weighted output values.
     """
+
     import numpy as np
 
     eps = np.finfo(float).eps
@@ -96,6 +98,8 @@ if __name__ == "__main__":
     graph.set_input("batch_size", 6)
     graph.set_input("processes", 2)
     graph.set_input("camera_sensitivities", camera_sensitivities)
+    graph.set_input("bypass_exposure_normalisation", True)
+    graph.set_input("exposure_normalisation_factor", 0.01)
     graph.set_input("CCT_D_uv", [5333, 0])
     graph.set_input("bypass_watermark", True)
     graph.set_input("output_colourspace", "ACEScg")
