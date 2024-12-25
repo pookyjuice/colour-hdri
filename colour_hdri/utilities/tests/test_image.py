@@ -85,6 +85,14 @@ class TestImageStack:
 
         self._image_stack = ImageStack().from_files(self._test_jpg_images)
 
+    def test_required_attributes(self) -> None:
+        """Test the presence of required attributes."""
+
+        required_attributes = ("cctf_decoding",)
+
+        for attribute in required_attributes:
+            assert attribute in dir(Image)
+
     def test_required_methods(self) -> None:
         """Test the presence of required methods."""
 
