@@ -855,6 +855,7 @@ class GraphPostMergeHDRI(ExecutionNode, PortGraph):
         self.add_input_port("exposure_normalisation_factor", None)
         self.add_input_port("processes")
         self.add_input_port("bypass_exposure_normalisation", False)
+        self.add_input_port("bypass_preview_image", False)
         self.add_output_port("output")
 
         for node in [
@@ -906,6 +907,11 @@ class GraphPostMergeHDRI(ExecutionNode, PortGraph):
             self.nodes["NormaliseExposure"],
             "bypass",
         )
+        self.connect(
+            "bypass_preview_image",
+            self.nodes["WritePreviewImage"],
+            "bypass",
+        )
         self.nodes["ParallelForMultiprocess"].set_input(
             "task", _task_multiprocess_post_merge_hdr
         )
@@ -943,6 +949,7 @@ class GraphBatchMergeHDRI(ExecutionNode, PortGraph):
         self.add_input_port("exposure_normalisation_factor", None)
         self.add_input_port("bypass_watermark", False)
         self.add_input_port("bypass_exposure_normalisation", False)
+        self.add_input_port("bypass_preview_image", False)
         self.add_input_port("processes")
 
         self.add_output_port("output")
@@ -1013,6 +1020,11 @@ class GraphBatchMergeHDRI(ExecutionNode, PortGraph):
             "bypass_exposure_normalisation",
             self.nodes["GraphPostMergeHDRI"],
             "bypass_exposure_normalisation",
+        )
+        self.connect(
+            "bypass_preview_image",
+            self.nodes["GraphPostMergeHDRI"],
+            "bypass_preview_image",
         )
         self.connect(
             "processes",
@@ -1105,6 +1117,7 @@ class GraphHDRI(ExecutionNode, PortGraph):
         self.add_input_port("bypass_watermark", False)
         self.add_input_port("bypass_orient", False)
         self.add_input_port("bypass_exposure_normalisation", False)
+        self.add_input_port("bypass_preview_image", False)
         self.add_input_port("batch_size", 3)
         self.add_input_port("weighting_function", double_sigmoid_anchored_function)
         self.add_input_port("processes")
@@ -1228,6 +1241,11 @@ class GraphHDRI(ExecutionNode, PortGraph):
             "bypass_exposure_normalisation",
             self.nodes["GraphBatchMergeHDRI"],
             "bypass_exposure_normalisation",
+        )
+        self.connect(
+            "bypass_preview_image",
+            self.nodes["GraphBatchMergeHDRI"],
+            "bypass_preview_image",
         )
         self.connect(
             "batch_size",
