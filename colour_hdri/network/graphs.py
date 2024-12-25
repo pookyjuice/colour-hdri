@@ -852,9 +852,10 @@ class GraphPostMergeHDRI(ExecutionNode, PortGraph):
         )
 
         self.add_input_port("array", [])
-        self.add_output_port("output")
+        self.add_input_port("exposure_normalisation_factor", None)
         self.add_input_port("processes")
         self.add_input_port("bypass_exposure_normalisation", False)
+        self.add_output_port("output")
 
         for node in [
             NodeNormaliseExposure("NormaliseExposure"),
@@ -889,6 +890,11 @@ class GraphPostMergeHDRI(ExecutionNode, PortGraph):
             "array",
             self.nodes["ParallelForMultiprocess"],
             "array",
+        )
+        self.connect(
+            "exposure_normalisation_factor",
+            self.nodes["NormaliseExposure"],
+            "normalisation_factor",
         )
         self.connect(
             "processes",
@@ -934,6 +940,7 @@ class GraphBatchMergeHDRI(ExecutionNode, PortGraph):
         self.add_input_port("array", [])
         self.add_input_port("batch_size", 3)
         self.add_input_port("weighting_function", double_sigmoid_anchored_function)
+        self.add_input_port("exposure_normalisation_factor", None)
         self.add_input_port("bypass_watermark", False)
         self.add_input_port("bypass_exposure_normalisation", False)
         self.add_input_port("processes")
@@ -991,6 +998,11 @@ class GraphBatchMergeHDRI(ExecutionNode, PortGraph):
             "weighting_function",
             self.nodes["GraphMergeHDRI"],
             "weighting_function",
+        )
+        self.connect(
+            "exposure_normalisation_factor",
+            self.nodes["GraphPostMergeHDRI"],
+            "exposure_normalisation_factor",
         )
         self.connect(
             "bypass_watermark",
@@ -1082,6 +1094,7 @@ class GraphHDRI(ExecutionNode, PortGraph):
         self.add_input_port("camera_sensitivities")
         self.add_input_port("output_colourspace")
         self.add_input_port("CCT_D_uv", [6500, 0])
+        self.add_input_port("exposure_normalisation_factor", None)
         self.add_input_port("downsample", 1)
         self.add_input_port("correct_vignette", True)
         self.add_input_port("correct_chromatic_aberration", True)
@@ -1155,6 +1168,11 @@ class GraphHDRI(ExecutionNode, PortGraph):
             "CCT_D_uv",
             self.nodes["GraphRawProcessingCameraSensitivities"],
             "CCT_D_uv",
+        )
+        self.connect(
+            "exposure_normalisation_factor",
+            self.nodes["GraphBatchMergeHDRI"],
+            "exposure_normalisation_factor",
         )
         self.connect(
             "downsample",
