@@ -265,7 +265,7 @@ def light_probe_sampling_variance_minimization_Viriyothai2009(
             Light_Specification(
                 (c / np.array(Y.shape))[::-1],
                 np.sum(np.sum(light_probe_c, 0), 0),
-                c,  # pyright: ignore
+                c,
             )
         )
 

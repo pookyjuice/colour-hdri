@@ -363,10 +363,39 @@ class Image:
         return metadata
 
 
+def _luminance_average_key(image: Image) -> NDArrayFloat | None:
+    """Comparison key function."""
+
+    metadata = cast(Metadata, image.metadata)
+
+    f_number = metadata.f_number
+    exposure_time = metadata.exposure_time
+    iso = metadata.iso
+
+    if f_number is None or exposure_time is None or iso is None:
+        warning(
+            f'"{image.path}" exposure data is missing, average '
+            f"luminance sorting is inapplicable!"
+        )
+        return None
+
+    return 1 / average_luminance(f_number, exposure_time, iso)
+
+
 class ImageStack(MutableSequence[Image]):
     """
     Define a convenient image stack storing a sequence of images for HDRI / radiance
     images generation.
+
+    Parameters
+    ----------
+    cctf_decoding
+            Decoding colour component transfer function (Decoding CCTF) or
+            electro-optical transfer function (EOTF / EOCF).
+
+    Attributes
+    ----------
+    -   :attr:`~colour_hdri.ImageStack.cctf_decoding`
 
     Methods
     -------
@@ -385,8 +414,44 @@ class ImageStack(MutableSequence[Image]):
     -   :meth:`colour_hdri.ImageStack.clear_metadata`
     """
 
-    def __init__(self) -> None:
+    def __init__(self, cctf_decoding: Callable | None = None) -> None:
         self._data: List = []
+        self._cctf_decoding: Callable | None = None
+        self.cctf_decoding = cctf_decoding
+
+    @property
+    def cctf_decoding(self) -> Callable | None:
+        """
+        Getter and setter property for the decoding colour component transfer
+        function (Decoding CCTF) / electro-optical transfer function
+        (EOTF).
+
+        Parameters
+        ----------
+        value
+            Decoding colour component transfer function (Decoding CCTF) /
+            electro-optical transfer function (EOTF).
+
+        Returns
+        -------
+        :py:data:`None` or Callable
+            Decoding colour component transfer function (Decoding CCTF) /
+            electro-optical transfer function (EOTF).
+        """
+
+        return self._cctf_decoding
+
+    @cctf_decoding.setter
+    def cctf_decoding(self, value: Callable | None) -> None:
+        """Setter for the **self.cctf_decoding** property."""
+
+        if value is not None:
+            attest(
+                callable(value),
+                f'"cctf_decoding" property: "{value}" is not callable!',
+            )
+
+        self._cctf_decoding = value
 
     def __getitem__(self, index: int | slice) -> Image | List[Image]:  # pyright: ignore
         """
@@ -461,6 +526,11 @@ class ImageStack(MutableSequence[Image]):
             return self.__dict__[attribute]
         except KeyError as exception:
             if hasattr(Image, attribute):
+                if attribute == "data":
+                    for image in self:
+                        if image.data is None:
+                            image.read_data()
+
                 value = [getattr(image, attribute) for image in self]
 
                 if attribute == "data":
@@ -533,7 +603,10 @@ class ImageStack(MutableSequence[Image]):
 
     @staticmethod
     def from_files(
-        image_files: Sequence[str], cctf_decoding: Callable | None = None
+        image_files: Sequence[str],
+        cctf_decoding: Callable | None = None,
+        read_data: bool = True,
+        read_metadata: bool = True,
     ) -> ImageStack:
         """
         Return a :class:`colour_hdri.ImageStack` instance from given image
@@ -546,44 +619,37 @@ class ImageStack(MutableSequence[Image]):
         cctf_decoding
             Decoding colour component transfer function (Decoding CCTF) or
             electro-optical transfer function (EOTF / EOCF).
+        read_data
+            Whether to read the image data.
+        read_metadata
+            Whether to read the image metadata.
 
         Returns
         -------
         :class:`colour_hdri.ImageStack`
         """
 
-        image_stack = ImageStack()
+        image_stack = ImageStack(cctf_decoding)
         for image_file in image_files:
             image = Image(image_file)
-            image.read_data(cctf_decoding)
-            image.read_metadata()
+
+            if read_data:
+                image.read_data(image_stack.cctf_decoding)
+
+            if read_metadata:
+                image.read_metadata()
+
             image_stack.append(image)
 
-        def luminance_average_key(image: Image) -> NDArrayFloat | None:
-            """Comparison key function."""
-
-            metadata = cast(Metadata, image.metadata)
-
-            f_number = metadata.f_number
-            exposure_time = metadata.exposure_time
-            iso = metadata.iso
-
-            if f_number is None or exposure_time is None or iso is None:
-                warning(
-                    f'"{image.path}" exposure data is missing, average '
-                    f"luminance sorting is inapplicable!"
-                )
-                return None
-            return 1 / average_luminance(f_number, exposure_time, iso)
-
-        image_stack.sort(luminance_average_key)
+        if read_metadata:
+            image_stack.sort(_luminance_average_key)
 
         return image_stack
 
     def is_valid(self) -> bool:
         """
         Return whether the image stack is valid, i.e., whether all the image
-        data and metadata is defined.
+        metadata is defined.
 
         Returns
         -------
@@ -591,7 +657,7 @@ class ImageStack(MutableSequence[Image]):
             Whether the image stack is valid.
         """
 
-        return all(not (image.data is None or image.metadata is None) for image in self)
+        return all(image.metadata is not None for image in self)
 
     def clear_data(self) -> None:
         """Clear the image stack image data."""
