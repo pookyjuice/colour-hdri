@@ -99,7 +99,7 @@ if __name__ == "__main__":
     graph.set_input("processes", 2)
     graph.set_input("camera_sensitivities", camera_sensitivities)
     graph.set_input("bypass_exposure_normalisation", True)
-    graph.set_input("exposure_normalisation_factor", 0.01)
+    graph.set_input("bypass_preview_image", True)
     graph.set_input("CCT_D_uv", [5333, 0])
     graph.set_input("bypass_watermark", True)
     graph.set_input("output_colourspace", "ACEScg")
