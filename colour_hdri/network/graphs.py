@@ -995,6 +995,11 @@ class GraphBatchMergeHDRI(ExecutionNode, PortGraph):
             self.nodes["ParallelForMultiprocess"],
             "processes",
         )
+        self.connect(
+            "processes",
+            self.nodes["GraphPostMergeHDRI"],
+            "processes",
+        )
         self.nodes["ParallelForMultiprocess"].connect(
             "execution_output", self.nodes["GraphPostMergeHDRI"], "execution_input"
         )
@@ -1201,6 +1206,11 @@ class GraphHDRI(ExecutionNode, PortGraph):
         self.connect(
             "processes",
             self.nodes["ParallelForMultiprocess"],
+            "processes",
+        )
+        self.connect(
+            "processes",
+            self.nodes["GraphBatchMergeHDRI"],
             "processes",
         )
         self.nodes["ParallelForMultiprocess"].set_input(
