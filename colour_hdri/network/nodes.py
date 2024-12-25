@@ -1479,7 +1479,9 @@ class NodeMergeImageStack(ExecutionNode):
 
 class NodeNormaliseExposure(ExecutionNode):
     """
-    Normalise the exposure of the input images.
+    Normalise the exposure of the input images by dividing them by given
+    normalising factor, or automatically derived from the median of the
+    images at given paths and multiplying them by the given scaling factor.
 
     Methods
     -------
@@ -1490,9 +1492,14 @@ class NodeNormaliseExposure(ExecutionNode):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        self.description = "Normalise the exposure of the input images"
+        self.description = (
+            "Normalise the exposure of the input images by dividing them by given "
+            "normalisation factor, or automatically derived from the median of the "
+            "images at given paths and multiplying them by the given scaling factor."
+        )
 
         self.add_input_port("image_paths", [])
+        self.add_input_port("normalisation_factor", None)
         self.add_input_port("scaling_factor", 0.2)
         self.add_input_port("bypass", False)
 
@@ -1509,22 +1516,25 @@ class NodeNormaliseExposure(ExecutionNode):
         if len(image_paths) == 0:
             return
 
-        median = []
-        for image_path in image_paths:
-            if not os.path.exists(image_path):
-                self.log(f'"{image_path}" image does not exist!')
-                return
+        normalisation_factor = self.get_input("normalisation_factor")
 
-            median.append(np.median(read_image_OpenImageIO(image_path)))
+        if normalisation_factor is None:
+            median = []
+            for image_path in image_paths:
+                if not os.path.exists(image_path):
+                    self.log(f'"{image_path}" image does not exist!')
+                    return
 
-        normalising_factor = np.median(median)
+                median.append(np.median(read_image_OpenImageIO(image_path)))
 
-        self.log(f"Normalising factor: {normalising_factor}")
+            normalisation_factor = 1 / np.median(median)
+
+        self.log(f"Normalisation factor: {normalisation_factor}")
 
         for image_path in image_paths:
             image, attributes = read_image_OpenImageIO(image_path, attributes=True)
 
-            image /= normalising_factor
+            image *= normalisation_factor
             image *= self.get_input("scaling_factor")
 
             write_image_OpenImageIO(image, image_path, attributes=attributes)
