@@ -91,7 +91,7 @@ class TestImageStack:
         required_attributes = ("cctf_decoding",)
 
         for attribute in required_attributes:
-            assert attribute in dir(Image)
+            assert attribute in dir(ImageStack)
 
     def test_required_methods(self) -> None:
         """Test the presence of required methods."""
