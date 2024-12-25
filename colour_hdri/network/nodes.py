@@ -1430,7 +1430,10 @@ class NodeCreateImageStack(ExecutionNode):
                 return
 
         self.set_output(
-            "image_stack", ImageStack.from_files(paths, self.get_input("cctf_decoding"))
+            "image_stack",
+            ImageStack.from_files(
+                paths, self.get_input("cctf_decoding"), read_data=False
+            ),
         )
 
         self.dirty = False
@@ -1508,7 +1511,7 @@ class NodeNormaliseExposure(ExecutionNode):
                 self.log(f'"{image_path}" image does not exist!')
                 return
 
-            median.append(np.median(read_image_OpenImageIO(image_path)))
+            median.append(np.median(read_image_OpenImageIO(image_path)))  # pyright: ignore
 
         normalising_factor = np.median(median)
 

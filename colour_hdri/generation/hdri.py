@@ -22,6 +22,7 @@ References
 
 from __future__ import annotations
 
+import gc
 import typing
 
 import numpy as np
@@ -30,7 +31,7 @@ from colour.constants import EPSILON
 if typing.TYPE_CHECKING:
     from colour.hints import ArrayLike, Callable, NDArrayFloat
 
-from colour.utilities import as_float_array, attest, tsplit, tstack, warning
+from colour.utilities import as_float_array, attest, tsplit, tstack, warning, zeros
 
 from colour_hdri.exposure import average_luminance
 from colour_hdri.generation import weighting_function_Debevec1997
@@ -96,10 +97,17 @@ def image_stack_to_HDRI(
 
     attest(image_stack.is_valid(), "Image stack is invalid!")
 
-    image_c = np.zeros(image_stack[0].data.shape)  # pyright: ignore
-    weight_c = np.zeros(image_stack[0].data.shape)  # pyright: ignore
+    image_c = as_float_array([])
+    weight_c = as_float_array([])
 
     for i, image in enumerate(image_stack):
+        if image.data is None:
+            image.read_data(image_stack.cctf_decoding)
+
+        if image_c.size == 0:
+            image_c = zeros(image.data.shape)  # pyright: ignore
+            weight_c = zeros(image.data.shape)  # pyright: ignore
+
         L = 1 / average_luminance(
             image.metadata.f_number,  # pyright: ignore
             image.metadata.exposure_time,  # pyright: ignore
@@ -114,28 +122,32 @@ def image_stack_to_HDRI(
                 f"colourspace."
             )
 
-        image_data = np.clip(image.data, EPSILON, 1)  # pyright: ignore
-        weights = np.clip(weighting_function(image_data), EPSILON, 1)
+        data = np.clip(image.data, EPSILON, 1)  # pyright: ignore
+        weights = np.clip(weighting_function(data), EPSILON, 1)
+
+        # Invoking garbage collection to free memory.
+        image.data = None
+        gc.collect()
 
         if i == 0:
-            weights[image_data >= 0.5] = 1
+            weights[data >= 0.5] = 1
 
         if i == len(image_stack) - 1:
-            weights[image_data <= 0.5] = 1
+            weights[data <= 0.5] = 1
 
         if camera_response_functions is not None:
             camera_response_functions = as_float_array(camera_response_functions)
             samples = np.linspace(0, 1, camera_response_functions.shape[0])
 
-            R, G, B = tsplit(image_data)
+            R, G, B = tsplit(data)
             R = np.interp(R, samples, camera_response_functions[..., 0])
             G = np.interp(G, samples, camera_response_functions[..., 1])
             B = np.interp(B, samples, camera_response_functions[..., 2])
-            image_data = tstack([R, G, B])
+            data = tstack([R, G, B])
 
-        image_c += weights * image_data / L
+        image_c += weights * data / L
         weight_c += weights
 
-        del image_data, weights
+        del data, weights
 
     return image_c / weight_c
