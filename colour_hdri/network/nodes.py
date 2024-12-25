@@ -1494,12 +1494,16 @@ class NodeNormaliseExposure(ExecutionNode):
 
         self.add_input_port("image_paths", [])
         self.add_input_port("scaling_factor", 0.2)
+        self.add_input_port("bypass", False)
 
     @required("OpenImageIO")
     def process(self, **kwargs: Any) -> None:  # noqa: ARG002
         """
         Process the node.
         """
+
+        if self.get_input("bypass"):
+            return
 
         image_paths = self.get_input("image_paths")
         if len(image_paths) == 0:

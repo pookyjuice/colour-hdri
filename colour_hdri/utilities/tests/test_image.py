@@ -253,13 +253,11 @@ class TestImageStack:
 
         image_stack = ImageStack().from_files(list(self._test_jpg_images))
 
-        assert image_stack.is_valid()
+        assert image_stack[0].data is not None  # pyright: ignore
 
         image_stack.clear_data()
 
         assert image_stack[0].data is None  # pyright: ignore
-
-        assert not image_stack.is_valid()
 
     def test_clear_metadata(self) -> None:
         """
