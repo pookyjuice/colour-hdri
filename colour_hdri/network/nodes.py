@@ -1614,7 +1614,7 @@ class NodeNormaliseExposure(ExecutionNode):
                 self.log(f'"{image_path}" image does not exist!')
                 return
 
-            median.append(np.median(read_image_OpenImageIO(image_path)))  # pyright: ignore
+            median.append(np.median(read_image_OpenImageIO(image_path)))
 
         normalising_factor = np.median(median)
 
