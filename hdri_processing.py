@@ -94,17 +94,17 @@ if __name__ == "__main__":
 
     graph = colour_hdri.GraphHDRI()
     graph.set_input("array", RAW_FILES)
-    graph.set_input("orientation", "90 CW")
+    # graph.set_input("orientation", "90 CW")
     graph.set_input("batch_size", 6)
-    graph.set_input("processes", 2)
+    graph.set_input("processes", 1)
     graph.set_input("camera_sensitivities", camera_sensitivities)
-    graph.set_input("bypass_exposure_normalisation", True)
+    graph.set_input("bypass_exposure_normalisation", False)
     graph.set_input("bypass_preview_image", True)
     graph.set_input("CCT_D_uv", [5333, 0])
     graph.set_input("bypass_watermark", True)
     graph.set_input("output_colourspace", "ACEScg")
     graph.set_input("correct_vignette", True)
-    graph.set_input("correct_chromatic_aberration", True)
+    graph.set_input("correct_chromatic_aberration", False)
     graph.set_input("correct_distortion", True)
     graph.set_input(
         "weighting_function",

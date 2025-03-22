@@ -10,10 +10,13 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
+import tempfile
 import time
 import typing
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 from colour import (
@@ -102,6 +105,7 @@ __all__ = [
     "NodeComputeInputTransformDNG",
     "NodeComputeInputTransformCameraSensitivities",
     "NodeProcessRawFileRawpy",
+    "NodeProcessRawFileRawTherapee",
     "NodeCorrectLensAberrationLensFun",
     "NodeDownsample",
     "NodeApplyInputTransformDNG",
@@ -204,7 +208,7 @@ class NodeConvertRawFileToDNGFile(ExecutionNode):
         self.add_input_port("dng_converter_arguments")
         self.add_output_port("dng_file_path")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -276,7 +280,7 @@ class NodeReadImage(ExecutionNode):
         self.add_output_port("exif_tags")
 
     @required("OpenImageIO")
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -334,7 +338,7 @@ class NodeWriteImage(ExecutionNode):
         self.add_input_port("bypass", False)
 
     @required("OpenImageIO")
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -405,7 +409,7 @@ class NodeWritePreviewImage(ExecutionNode):
         self.add_output_port("preview_path")
 
     @required("OpenImageIO")
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -454,7 +458,7 @@ class NodeRemoveFile(ExecutionNode):
         self.add_input_port("path")
         self.add_input_port("bypass", False)
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -492,7 +496,7 @@ class NodeOrient(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -539,7 +543,7 @@ class NodeWatermark(ExecutionNode):
         self.add_output_port("output_image")
 
     @required("OpenCV")  # pyright: ignore
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -625,7 +629,7 @@ class NodeProcessingMetadata(ExecutionNode):
         self.add_input_port("sources")
         self.add_output_port("output_metadata")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -686,7 +690,7 @@ class NodeReadFileExifData(ExecutionNode):
         self.add_input_port("file_path")
         self.add_output_port("exif_tags")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -722,7 +726,7 @@ class NodeReadFileMetadataDNG(ExecutionNode):
         self.add_input_port("dng_file_path")
         self.add_output_port("metadata")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -765,7 +769,7 @@ class NodeComputeInputTransformDNG(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("input_transform", InputTransform())
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -888,7 +892,7 @@ class NodeComputeInputTransformCameraSensitivities(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("input_transform", InputTransform())
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -992,7 +996,7 @@ class NodeProcessRawFileRawpy(ExecutionNode):
         self.add_output_port("image")
 
     @required("rawpy")  # pyright: ignore
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -1009,17 +1013,41 @@ class NodeProcessRawFileRawpy(ExecutionNode):
 
         input_transform = self.get_input("input_transform")
 
+        # import OpenImageIO as oiio
+
+        # # Create a configuration for raw processing.
+        # config = oiio.ImageSpec()
+        # #config.attribute("oiio:unprocessed", True)
+        # config.attribute("raw:aber", oiio.TypeDesc("float[2]"), [1.00035, 1.00002])
+        # config.attribute("raw:Demosaic","AHD-Mod")
+        # config.attribute("raw:fbdd_noiserd",2)
+        # #config.attribute("raw:use_camera_matrix",1)
+        # config.attribute("raw:HighlightMode",5)
+        # config.attribute("raw:ColorSpace",'raw')
+        # # config.attribute("raw:auto_bright",True)
+        # config.attribute("raw:balance_clamped",0)
+        # user_wb=np.hstack(
+        # [
+        #     input_transform.RGB_w,
+        #     input_transform.RGB_w[1],
+        # ]
+        # ).tolist()
+
+        # config.attribute("raw:user_mul",oiio.TypeDesc("float[4]"), user_wb)
+        # img_buf = oiio.ImageBuf(raw_file_path, 0, 0, config)
+
         with rawpy.imread(raw_file_path) as raw_file:
             self.log(f'Processing "{raw_file_path}" file...')
 
             image = raw_file.postprocess(
                 gamma=(1, 1),
                 no_auto_bright=True,
-                demosaic_algorithm=rawpy.DemosaicAlgorithm(12),  # pyright: ignore
-                fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode(2),  # pyright: ignore
+                demosaic_algorithm=rawpy.DemosaicAlgorithm(3),  # pyright: ignore
+                fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode(1),  # pyright: ignore
                 highlight_mode=rawpy.HighlightMode(5),  # pyright: ignore
                 output_color=rawpy.ColorSpace(0),  # pyright: ignore
                 output_bps=16,
+                chromatic_aberration=(1.00033, 1.00009),
                 user_wb=np.hstack(
                     [
                         input_transform.RGB_w,
@@ -1032,6 +1060,91 @@ class NodeProcessRawFileRawpy(ExecutionNode):
 
         self.set_output("image", image)
 
+        self.dirty = False
+
+
+class NodeProcessRawFileRawTherapee(ExecutionNode):
+    """
+    Process a given raw file (e.g., CR2, CR3, NEF) using RawTherapee 5.11.
+
+    Methods
+    -------
+    -   :meth:`~colour_hdri.NodeProcessRawFileRawTherapee.__init__`
+    -   :meth:`~colour_hdri.NodeProcessRawFileRawTherapee.process`
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.description = (
+            'Process given raw file (e.g., "CR2", "CR3", "NEF") using RawTherapee 5.11.'
+        )
+
+        self.add_input_port("raw_file_path")
+        self.add_input_port("input_transform", InputTransform())
+        self.add_output_port("image")
+
+    def process(self, **kwargs: Any) -> None:
+        """
+        Process the node by invoking RawTherapee 5.11 from the command line.
+        """
+
+        raw_file_path = self.get_input("raw_file_path")
+        if raw_file_path is None:
+            return
+
+        if not os.path.exists(raw_file_path):
+            self.log(f'"{raw_file_path}" file does not exist!', "error")
+            return
+
+        # Create a temporary directory for the output TIFF and PP3 profile file.
+
+        output_tiff_path = os.path.join("/Ingestion", f"{Path(raw_file_path).stem}.tif")
+        self.log(f"Temporary file will be created at: {output_tiff_path}")
+        # Define a minimal PP3 profile file to control RawTherapee processing.
+        # Adjust the PP3 content as necessary for your needs.
+
+        pp3_file_path = "/Ingestion/tests/neutral.NEF.pp3"
+
+        # Build the command to invoke RawTherapee.
+        # The flags used here are valid for RawTherapee 5.12:
+        # -o: set output file,
+        # -p: specify the PP3 profile,
+        # -s: silent mode (no GUI),
+        # -t: generate TIFF output,
+        # -Y: overwrite any existing output file,
+        # -c: specify the input file.
+        command = [
+            "rawtherapee-cli",
+            "-o",
+            output_tiff_path,
+            "-p",
+            pp3_file_path,
+            "-tz",  # output as TIFF
+            "-b32",
+            "-Y",  # overwrite output if it exists
+            "-c",
+            raw_file_path,
+        ]
+
+        # Run RawTherapee and check for errors.
+        try:
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as error:
+            self.log(f"RawTherapee failed: {error}", "error")
+            return
+
+        # Load the TIFF output into a NumPy array.
+        import imageio
+
+        image_array = imageio.imread(output_tiff_path)
+
+        # Convert the image to 32-bit float as per your pipeline.
+        image_array = convert_bit_depth(image_array, "float32")
+
+        self.set_output("image", image_array)
+
+        # Mark the node as up to date.
         self.dirty = False
 
 
@@ -1064,7 +1177,7 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         self.add_output_port("output_image")
 
     @required("lensfunpy", "OpenCV")  # pyright: ignore
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -1237,11 +1350,11 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
             self.set_output("output_image", output_image)
             self.dirty = False
 
-    def correct_chromatic_aberration_with_darktable(
+    def correct_chromatic_aberration_with_rawtherapee(
         self, input_image: np.ndarray
     ) -> np.ndarray:
         """
-        Correct chromatic aberration using darktable-cli.
+        Correct chromatic aberration using rawtherapee.
 
         Parameters
         ----------
@@ -1260,7 +1373,6 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
         """
         import os
         import subprocess
-        import tempfile
 
         import cv2
 
@@ -1301,11 +1413,13 @@ class NodeCorrectLensAberrationLensFun(ExecutionNode):
                 # Read the corrected output file as a numpy array
                 corrected_file = cv2.imread(temp_output_file, cv2.COLOR_RGB2BGR)
                 if corrected_file is None:
-                    raise RuntimeError("Failed to read the corrected file.")
+                    ex = "Failed to read the corrected file."
+                    raise RuntimeError(ex)
 
             except subprocess.CalledProcessError as e:
                 self.log(f"Error running subprocess: {e.stderr}")
-                raise RuntimeError("Subprocess failed.") from e
+                ex = "Subprocess failed."
+                raise RuntimeError(ex) from e
 
         return corrected_file
 
@@ -1330,7 +1444,7 @@ class NodeDownsample(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -1375,7 +1489,7 @@ class NodeApplyInputTransformDNG(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -1434,7 +1548,7 @@ class NodeApplyInputTransformCameraSensitivities(ExecutionNode):
         self.add_input_port("bypass", False)
         self.add_output_port("output_image")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -1485,7 +1599,7 @@ class NodeCreateBatches(ExecutionNode):
         self.add_input_port("batch_size", 3)
         self.add_output_port("batches", [])
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -1518,7 +1632,7 @@ class NodeCreateImageStack(ExecutionNode):
         self.add_input_port("cctf_decoding", linear_function)
         self.add_output_port("image_stack")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -1561,7 +1675,7 @@ class NodeMergeImageStack(ExecutionNode):
         self.add_input_port("weighting_function", double_sigmoid_anchored_function)
         self.add_output_port("image")
 
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """
@@ -1607,7 +1721,7 @@ class NodeNormaliseExposure(ExecutionNode):
         self.add_input_port("bypass", False)
 
     @required("OpenImageIO")
-    def process(self, **kwargs: Any) -> None:  # noqa: ARG002
+    def process(self, **kwargs: Any) -> None:
         """
         Process the node.
         """

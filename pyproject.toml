@@ -165,6 +165,8 @@ ignore = [
     "TD", # flake8-todos
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
     "D200", # One-line docstring should fit on one line
+    "ARG002", # argument count
+    "S603", # One-line docstring should fit on one line
     "D202", # No blank lines allowed after function docstring
     "D205", # 1 blank line required between summary line and description
     "D301", # Use `r"""` if any backslashes in a docstring

@@ -394,6 +394,7 @@ class GraphRawProcessingCameraSensitivities(ExecutionNode, PortGraph):
                 "ComputeInputTransformCameraSensitivities"
             ),
             NodeProcessRawFileRawpy("ProcessRawFileRawpy"),
+            # NodeProcessRawFileRawTherapee("ProcessRawFileRawTherapee"),
             NodeRemoveFile("RemoveDNGFile"),
             NodeCorrectLensAberrationLensFun("CorrectLensAberrationLensFun"),
             NodeDownsample("Downsample"),
@@ -420,6 +421,10 @@ class GraphRawProcessingCameraSensitivities(ExecutionNode, PortGraph):
                 ("ConvertRawFileToDNGFile", "dng_file_path"),
                 ("ProcessRawFileRawpy", "raw_file_path"),
             ),
+            # (
+            #     ("ConvertRawFileToDNGFile", "dng_file_path"),
+            #     ("ProcessRawFileRawTherapee", "raw_file_path"),
+            # ),
             (
                 ("ConvertRawFileToDNGFile", "dng_file_path"),
                 ("RemoveDNGFile", "path"),
@@ -456,6 +461,14 @@ class GraphRawProcessingCameraSensitivities(ExecutionNode, PortGraph):
                 ("ComputeInputTransformCameraSensitivities", "input_transform"),
                 ("ProcessRawFileRawpy", "input_transform"),
             ),
+            # (
+            #     ("ComputeInputTransformCameraSensitivities", "execution_output"),
+            #     ("ProcessRawFileRawTherapee", "execution_input"),
+            # ),
+            # (
+            #     ("ComputeInputTransformCameraSensitivities", "input_transform"),
+            #     ("ProcessRawFileRawTherapee", "input_transform"),
+            # ),
             (
                 ("ComputeInputTransformCameraSensitivities", "input_transform"),
                 ("ApplyInputTransformCameraSensitivities", "input_transform"),
@@ -472,6 +485,14 @@ class GraphRawProcessingCameraSensitivities(ExecutionNode, PortGraph):
                 ("ProcessRawFileRawpy", "image"),
                 ("CorrectLensAberrationLensFun", "input_image"),
             ),
+            # (
+            #     ("ProcessRawFileRawTherapee", "execution_output"),
+            #     ("RemoveDNGFile", "execution_input"),
+            # ),
+            # (
+            #     ("ProcessRawFileRawTherapee", "image"),
+            #     ("CorrectLensAberrationLensFun", "input_image"),
+            # ),
             (
                 ("RemoveDNGFile", "execution_output"),
                 ("CorrectLensAberrationLensFun", "execution_input"),
